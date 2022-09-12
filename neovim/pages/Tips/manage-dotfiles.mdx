@@ -1,0 +1,94 @@
+---
+title: Manage Your Dotfiles With Git
+date: 2022-09-12
+tags: ["neovim", "nvim", "setup", "Japanese", "セットアップ", "Stow", "stow"]
+type: docs
+description: In-depth tutorial of stow to manage your dotfiles with git [/Tips/manage-dotfiles]
+spoiler: Gnu Stow
+---
+
+# Manage Your Dotfiles With Git
+
+今まで設定ファイルをすべて `~/.config/nvim/` の中に置いてきたと思うが、他のPCで作業したいときにこの設定をそのまま使いたい！
+
+そのため自分の設定ファイルをGitを使ってクラウドにあげて、いつでもどこでもアクセスできるようにしましょう。
+
+今回は設定ファイルを `Gnu Stow` というデプロイプログラムを使って管理したいと思います。
+
+## Create Your Git Repository
+
+GithubやGitlabなどに自分のアカウントで `dotfiles` というレポジトリを作りましょう。それをホームディレクトリ直下に `git clone` してください。
+
+```bash
+cd ~
+git clone git@github.com:<user-name>/dotfiles.git
+# ssh で管理するリンクのほうがおすすめ
+```
+
+## How to Use Gnu Stow
+
+Stowはプロジェクトごとにいい感じにホームディレクトリに向けてシムリンクを貼ってくれるというプログラムです。
+例えば、こんな感じのディレクトリがあったとすると、その構造のままデプロイしてくれる。
+
+```txt
+dotfiles/
+├── hoge/
+│   └── .config/
+│       └── hoge/
+│           └── settings.cfg
+└── fuga/
+    └── .config/
+        └── .fugarc
+```
+
+`dotfiles` 直下のフォルダ名がプロジェクト名として、`stow`に引数として渡せる。
+
+```bash
+cd dotfiles
+stow -v hoge fuga
+```
+
+```txt
+~/
+├── .config/
+│   ├── hoge/
+│   │   └── settings.cfg
+│   └── .fugarc
+└── dotfiles/...
+```
+
+## Move Your Nvim Configs to dotfiles
+
+nvimというプロジェクト(フォルダ)を作って、今まで作ってきた設定ファイルを形そのまま `dotfiles` の中に移動させましょう。
+
+```bash
+cd ~/dotfiles
+mkdir -p nvim/.config
+mv ~/.config/nvim/ ./nvim/.config/nvim
+```
+
+持ってきたあとに、`stow`を使ってデプロイしましょう。
+
+```bash
+stow -v nvim
+```
+
+## Write `.gitignore`
+
+`~/.config/nvim/` の中にはNvimを使っていると自動生成されるファイルもあるので、それらをgitignoreしましょう。
+
+## Push to Git
+
+```bash
+git add .
+git commit -m "Upload my nvim configs"
+git push
+```
+
+# How to Delete Deployed Files
+
+Stowを使ってシムリンクを貼った場合はコマンド一発で元に戻すことができます。
+
+```bash
+stow -vD nvim
+```
