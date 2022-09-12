@@ -1,7 +1,27 @@
 const withNextra = require('nextra')({
   theme: 'nextra-theme-docs',
   themeConfig: './theme.config.js',
-  // optional: add `unstable_staticImage: true` to enable Nextra's auto image import
+  unstable_staticImage: true,
+  unstable_defaultShowCopyCode: true,
+  unstable_readingTime: true,
 });
 
-module.exports = withNextra();
+const config = {
+  basePath: '/neovim',
+  experimental: {
+    // newNextLinkBehavior: true,
+    browsersListForSwc: true,
+    // legacyBrowsers: false,
+  },
+  async redirects() {
+    return [
+      {
+        source: '/tags',
+        destination: '/blog',
+        permanent: false,
+      },
+    ];
+  },
+};
+
+module.exports = withNextra(config);
