@@ -1,0 +1,36 @@
+---
+title: Lua and Vimscript Together
+date: 2022-09-12
+tags: ["neovim", "nvim", "setup", "Japanese", "セットアップ"]
+type: docs
+description: luaファイルでvimscript、vimファイルでluaをそれぞれ呼び出す方法 [/tips/exec-cmd]
+spoiler: 
+---
+
+# Tips : lua ファイルで vimscript、vim ファイルで lua をそれぞれ呼び出す方法
+
+- `vimscript` inside lua file
+
+```lua
+vim.cmd([[
+echo 'This is vimscript.'
+echo 'Multiple lines also available.'
+]])
+```
+
+- `lua` inside vim file
+  - *This breaks compatibility with `vim`*
+
+```vimscript
+lua << EOF
+vim.pretty_print('This is lua inside vimscript.')
+vim.pretty_print('Multiple lines also available.')
+EOF
+```
+
+```vimscript
+" Write script to only run in nvim
+if has('nvim')
+  " do nvim specific stuffs
+endif
+```
