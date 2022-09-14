@@ -9,7 +9,7 @@ const UNAME = pkg.author.username;
 const NAME = UNAME;
 // const NAME = pkg.author.name;
 const EMAIL = pkg.author.email;
-const SITE = `${pkg.author.url.replace('www', 'wiki')}/neovim`;
+const SITE = `${pkg.author.url.replace('www', 'wiki')}${process.env.NEXT_PUBLIC_API_URL || '/neovim'}`;
 const TWITTER = `@${UNAME}`;
 const LOGO = `${SITE}/public/favicon.ico`;
 
