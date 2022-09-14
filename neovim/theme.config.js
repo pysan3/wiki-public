@@ -182,7 +182,7 @@ export default {
   logo: (
     <span style={{ display: 'inline-block' }}>
       <img
-        src="/neovim/favicon.ico"
+        src={`${process.env.NEXT_PUBLIC_API_URL || '/neovim'}/favicon.ico`}
         alt=" "
         style={{
           display: 'inline-block', width: '30px', height: '30px', objectFit: 'cover',
@@ -194,7 +194,7 @@ export default {
   ),
   navs: [
     {
-      url: `${SITE.replace('www', 'wiki')}/neovim`,
+      url: SITE,
       name: 'Back',
     },
   ],
