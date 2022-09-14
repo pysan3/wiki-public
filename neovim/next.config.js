@@ -8,6 +8,11 @@ const withNextra = require('nextra')({
 
 const config = {
   basePath: '/neovim',
+  exportPathMap: './dest',
+  images: {
+    unoptimized: true,
+  },
+  trailingSlash: true,
   experimental: {
     // newNextLinkBehavior: true,
     browsersListForSwc: true,
