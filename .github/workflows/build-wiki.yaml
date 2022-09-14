@@ -26,10 +26,12 @@ jobs:
           pnpm next build && pnpm next export
       - name: Upload to `gh-pages`
         run: |
-          rm -rf neovim && mv out neovim
+          git clone https://github.com/pysan3/wiki-public.git
+          cd wiki-public && git checkout -t origin/gh-pages
+          rm -rf neovim && mv ../out neovim
           git config --global user.email "${{ secrets.GITHUB_EMAIL }}"
           git config --global user.name "${{ env.gitname }}"
-          git init && git add -A neovim && git commit -m "Build from GH Actions"
+          git init && git add -A && git commit -m "Build from GH Actions"
           git push -f https://${{ env.gitname }}:${{ secrets.GITHUB_TOKEN }}@github.com/${{ env.gitname }}/${{ env.reponame }}.git master:${{ env.gitbranch }}
         env:
           gitname: pysan3
