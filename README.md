@@ -8,5 +8,7 @@
 cd ./neovim/
 pnpm install
 pnpm next
+
+# Go to localhost:3000/neovim
 ```
 
