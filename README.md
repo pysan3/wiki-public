@@ -2,9 +2,7 @@
 
 ## Sections
 
-### [neovim](./neovim/)
-
-#### Setup
+- [neovim](./neovim/)
 
 ```sh
 cd ./neovim/
