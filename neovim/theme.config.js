@@ -9,9 +9,12 @@ const UNAME = pkg.author.username;
 const NAME = UNAME;
 // const NAME = pkg.author.name;
 const EMAIL = pkg.author.email;
-const SITE = `${pkg.author.url.replace('www', 'wiki')}${process.env.NEXT_PUBLIC_API_URL || '/neovim'}`;
+const URL = `${pkg.author.url.replace('www', 'wiki')}`;
+const REL_PATH = `${process.env.NEXT_PUBLIC_API_URL || '/neovim'}`;
+const SITE = `${URL}${REL_PATH}`;
 const TWITTER = `@${UNAME}`;
-const LOGO = `${SITE}/public/favicon.ico`;
+const REL_LOGO = `${REL_PATH}/public/favicon.ico`;
+const LOGO = `${URL}${REL_LOGO}`;
 
 function Seo({ title, meta }) {
   const pageTitle = `${title} - ${NAME}`;
@@ -21,7 +24,7 @@ function Seo({ title, meta }) {
   return ( // eslint-disable-next-line
     <>
       {/* <!-- Search Engine --> */}
-      <link rel="icon" type="image/svg+xml" href={LOGO} />
+      <link rel="icon" type="image/svg+xml" href={REL_LOGO} />
       <link
         rel="canonical"
         href={`${SITE}/${pathname}`}
