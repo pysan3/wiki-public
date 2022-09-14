@@ -1,0 +1,211 @@
+---
+title: Enhance Your Nvim Life With Plugins!
+date: 2022-09-12
+tags: ["neovim", "nvim", "setup", "Japanese", "セットアップ"]
+type: docs
+description: Walk though how to setup packer.nvim to manage your plugins [../00-plug-config]
+spoiler: 
+---
+
+# Enhance Your Nvim Life With Plugins!
+
+Nvimはとても多くの拡張機能が開発されており、それを管理するのも非常に簡単です。
+
+Nvimの真髄を味わうために、プラグインを入れられるようになりましょう。
+
+## Split Your Config File into Separate Files
+
+プラグインの管理をし始めると、設定ファイルの行数が増えていき管理がしづらくなってしまいます。
+そのため、設定ファイルを複数に分けそれぞれの設定をどこに書いたか見つけやすくしましょう。
+
+それらすべてのファイルは `init.vim` / `init.lua` からimportしていきます。
+
+### How to Import Separate Files
+
+Importの仕方は言語によって異なります。
+`vimscript`をimportするには`source <file-name>`をし、`lua`ファイルをimportするには`require("<file-name>")`をします。luaの場合は `~/.config/nvim/lua/` がランタイムパスになっていて、そこからの相対パスをrequireします。
+
+仮にこういうフォルダ構造になっていたとすると、
+```txt
+📂 ~/.config/nvim
+├── 📂 general
+│  └── 🇻 settings.vim
+├── 📂 lua
+│  └── 📂 00-general
+│     └── 🌑 settings.lua
+├── 🌑 init.lua
+└── 🇻 init.vim
+```
+
+- `init.vim` -> vimscript files, lua files
+
+```vimscript filename="init.vim"
+" import vimscript file
+source ~/.config/nvim/general/settings.vim
+" import lua files
+lua require('00-general.settings')
+```
+
+- `init.lua` -> vimscript files, lua files
+
+```lua filename="init.lua"
+-- import vimscript file
+vim.cmd([[
+source ~/.config/nvim/general/settings.vim
+]])
+-- import lua files (one of the followings)
+require('00-general.settings')
+require('00-general/settings') -- requireのパスは/か.で階層を区切る (.が一般的)
+require '00-general.settings' -- かっこは省略可能
+require "00-general.settings" -- 文字列は "" もあり
+```
+
+# Packer.nvim
+
+今回はプラグインマネージャとして [`packer.nvim`](https://github.com/wbthomason/packer.nvim) について書きます。ほかにもいろいろあって、どれも基本的に使い勝手は変わりません。
+
+- [packer.nvim](https://github.com/wbthomason/packer.nvim) : Luaで書かれていて速い。みんな使ってる
+- [dein.vim](https://github.com/Shougo/dein.vim) : 作者が日本人なので日本語の記事多め
+- [vim-plug](https://github.com/junegunn/vim-plug) : 古くからあるのでどのチュートリアルでもこれが載ってることが多い
+
+基本的な使い方は以下の通りで、これを設定ファイルにコピペしてください。ただし、この記事では設定を書きやすくするためにちょっと書き方を変えます。そのままこの記事に従っていく場合は [## Automatically Install Packer.nvim](#automaticaly-install-packernvim) までスキップ。
+
+[Option Details](https://github.com/wbthomason/packer.nvim#specifying-plugins)
+```lua
+vim.cmd [[packadd packer.nvim]]
+
+return require('packer').startup(function(use)
+  -- Packer can manage itself
+  use 'wbthomason/packer.nvim'
+
+  -- Simple plugins can be specified as strings
+  use 'lunarvim/colorschemes'
+  use 'folke/tokyonight.nvim'
+
+  -- Post-install/update hook with neovim command
+  use { 'nvim-treesitter/nvim-treesitter', run = ':TSUpdate' }
+end)
+```
+
+## Automatically Install Packer.nvim
+
+Packer.nvimに関する設定を書くファイルを用意します。 `~/.config/nvim/lua/00-plug-config/init.lua` を作ってください。
+Packer.nvimを使用するには別途インストールが必要ですが、それを自動的に行なってくれるスクリプトを最初に書きます。
+
+また、デフォルトではプラグインの読み込みのキャッシュを `~/.config/nvim/plugin/packer_compiled.lua` に作成します。これがdotfilesを汚してしまうので作成先を変更しています。
+
+```lua
+local install_path = vim.fn.stdpath("data") .. "/site/pack/packer/start/packer.nvim"
+if vim.fn.empty(vim.fn.glob(install_path)) > 0 then
+  local git_path = "https://github.com/wbthomason/packer.nvim"
+  PACKER_BOOTSTRAP = vim.fn.system({ "git", "clone", "--depth", "1", git_path, install_path })
+  print("Installing packer close and reopen Neovim...")
+  vim.cmd([[packadd packer.nvim]])
+end
+local compile_path = string.format("%s/%s", vim.fn.stdpath("cache"), "plugin/packer_compiled.lua")
+local packer = require("packer")
+
+packer.reset()
+packer.init({
+  compile_path = compile_path,
+  display = { open_fn = require("packer.util").float },
+  autoremove = true,
+})
+if vim.fn.filereadable(compile_path) ~= 0 then
+  vim.cmd(string.format("luafile %s", compile_path))
+end
+```
+
+## Manage Multiple Plugins
+
+管理するプラグインの数が多くなってくるとファイルの数が膨大になってしまうので、機能別でフォルダに分けます。この記事もそのフォルダごとに章を分けて書いています。
+
+最終的なフォルダストラクチャはこんな感じになります。それぞれ解説するページがあるので興味があるものを読んでください。
+
+```txt
+~/.config/nvim/lua/
+├── 00-plug-config/ <- ｲﾏｺｺ
+├── 10-color-config/
+├── 10-ts-config/
+├── 11-uiline-config/
+├── 20-register-config/
+├── 20-utility-config/
+├── 25-telescope-config/
+├── 30-git-config/
+├── 40-terminal-config/
+├── 50-command-config/
+├── 50-operations-config/
+├── 60-lang-config/
+├── 70-cmp-config/
+├── 70-lsp-config/
+└── 80-debug-config/
+```
+
+それぞれのフォルダを順番に読み込んでいくスクリプトを書きます。これを順番に読み込むコードを`~/.config/nvim/lua/00-plug-config/init.lua` に追記してください。
+
+```lua
+return packer.startup(function(use)
+  -- stylua: ignore start
+  local function load_sub_dirs(dir_name)
+    local load_ok, plugin_table = pcall(require, dir_name)
+    if not load_ok then return false end
+    for _, plugin in ipairs(plugin_table.install or {}) do use(plugin) end
+    for _, plugin in ipairs(plugin_table.setup or {}) do
+      if type(plugin) ~= "table" then plugin = { plugin } end
+      plugin.config = string.format([[require("%s.%s")]], dir_name, plugin[1]:gsub(".*/([^.]*)%.?.*$", "%1"))
+      use(plugin)
+    end
+  end
+
+  -- stylua: ignore end
+
+  use({ "lewis6991/impatient.nvim" })
+  require("impatient")
+
+  use({ "wbthomason/packer.nvim" }) -- Have packer manage itself
+  use({ "nvim-lua/popup.nvim" }) -- An implementation of the Popup API from vim in Neovim
+  use({ "nvim-lua/plenary.nvim" }) -- Useful lua functions used lots of plugins
+
+  -- 今は全部コメントアウト
+  -- load_sub_dirs("10-color-config")
+  -- load_sub_dirs("10-ts-config")
+  -- load_sub_dirs("11-uiline-config")
+  -- load_sub_dirs("20-utility-config")
+  -- load_sub_dirs("20-register-config")
+  -- load_sub_dirs("25-telescope-config")
+  -- load_sub_dirs("30-git-config")
+  -- load_sub_dirs("40-terminal-config")
+  -- load_sub_dirs("50-operations-config")
+  -- load_sub_dirs("50-command-config")
+  -- load_sub_dirs("60-lang-config")
+  -- load_sub_dirs("70-cmp-config")
+  -- load_sub_dirs("70-lsp-config")
+  -- load_sub_dirs("80-debug-config")
+
+  if PACKER_BOOTSTRAP then
+    packer.sync()
+  end
+end)
+```
+
+`impatient.nvim` ~ `plenary.nvim`は必須プラグインなのですでにインストールしてしまいましょう。
+
+`init.vim` or `init.lua`でこのファイルを読み込みます。ちなみに`init.lua`はpythonでいう`__init__.py`と同じ意味で、フォルダ名だけrequireすればいいです。
+
+```vimscript filename="init.vim"
+lua require '00-plug-config'
+```
+
+```lua filename="init.lua"
+require("00-plug-config")
+```
+
+いったんNvimを閉じて、再度開いてください。そこで`:PackerSync<CR>`というコマンドを実行すると`impatient.nvim` ~ `plenary.nvim`のインストールが始まるはずです。
+
+***
+
+<span style={{ textAlign: "center" }}>
+無事インストールが完了したら、[次回](10-color-config)はcolorscheme (色の設定) をしていきましょう。
+</span>
+
+***
