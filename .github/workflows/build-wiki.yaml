@@ -28,7 +28,7 @@ jobs:
         run: |
           git clone https://github.com/pysan3/wiki-public.git
           cd wiki-public && git checkout -t origin/gh-pages
-          rm -rf neovim .git && mv ../out neovim
+          rm -rf neovim .git && mv ../out neovim && mv ../public public
           git config --global user.email "${{ secrets.GITHUB_EMAIL }}"
           git config --global user.name "${{ env.gitname }}"
           git init && git add -A && git commit -m "Build from GH Actions"
