@@ -22,7 +22,7 @@ jobs:
         run: pnpm install
       - name: Build and Export
         run: |
-          cat NEXT_PUBLIC_API_URL='/wiki-public/neovim' > .env
+          echo NEXT_PUBLIC_API_URL='/wiki-public/neovim' > .env
           pnpm next build && pnpm next export
       - name: Upload to `gh-pages`
         run: |
