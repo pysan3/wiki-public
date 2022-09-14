@@ -21,7 +21,9 @@ jobs:
       - name: Install dependencies
         run: pnpm install
       - name: Build and Export
-        run: pnpm next build && pnpm next export
+        run: |
+          cat NEXT_PUBLIC_API_URL='/wiki-public/neovim' > .env
+          pnpm next build && pnpm next export
       - name: Upload to `gh-pages`
         run: |
           rm -rf neovim && mv out neovim

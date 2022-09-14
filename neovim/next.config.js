@@ -7,7 +7,8 @@ const withNextra = require('nextra')({
 });
 
 const config = {
-  basePath: '/neovim',
+  // basePath: '/neovim',
+  basePath: process.env.NEXT_PUBLIC_API_URL || '/neovim',
   exportPathMap: './dest',
   images: {
     unoptimized: true,
