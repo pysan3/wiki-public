@@ -1,0 +1,105 @@
+---
+title: Get the Best Colorscheme
+date: 2022-09-14
+tags: ["neovim", "nvim", "setup", "Japanese", "セットアップ"]
+type: docs
+description: How to install and setup colorscheme for nvim [/10-color-config]
+spoiler: 
+---
+
+# Get the Best Colorscheme
+
+`colorscheme`を設定することでnvimの見た目を変更することができます。自分ですべての `highlight` を設定する方法もありますが、有志が公開している素晴らしいテーマをインストールして使いましょう。これらはプラグインとしてインストールすることで、簡単に設定することができます。
+
+## How to Add Plugin With `init.lua`
+
+[前回](plug-config) のスクリプトの`load_sub_dir`関数は、引数の名前のディレクトリの中の`init.lua`を読み取ってインストールをします。
+
+```lua filename="xxx/init.lua"
+return {
+  install = {
+    'lunarvim/colorschemes'
+  },
+  setup = {
+    'folke/tokyonight.nvim'
+  }
+}
+```
+```txt
+~/.config/nvim/lua/
+├── 00-plug-config/
+└── xxx/
+  ├── init.lua
+  └── tokyonight.lua
+```
+
+それぞれの要素は`packer.nvim`のuse関数への引数で、`install`の中にいるのはそのまま読み込まれ、`setup`の中にいるのはプラグインと同名のファイルをセットアップ時に読み込みます。つまり上の例だと`tokyonight.lua`がセットアップ時に読み込まれます。(プラグイン名の`.`のあとは無視される。)
+
+## My Recommended Colorscheme
+
+以下は私がおすすめするプラグインたちです。私はその日の気分に合わせて変更できるように、`NVIM_COLOR` という環境変数によって変更できるような設定にしています。実際の画像は[こちら](10-color-config/colorscheme)。
+
+```lua filename="10-color-config/init.lua"
+local function set_colorscheme(extends)
+  return function()
+    vim.cmd(string.format("colorscheme %s", os.getenv("NVIM_COLOR")))
+    if extends ~= nil then
+      extends()
+    end
+  end
+end
+
+return {
+  install = {
+    {
+      "christianchiarulli/nvcode-color-schemes.vim",
+      cond = os.getenv("NVIM_COLOR") == "nvcode",
+      config = set_colorscheme(),
+    },
+    {
+      "ellisonleao/gruvbox.nvim",
+      cond = os.getenv("NVIM_COLOR") == "gruvbox",
+      config = set_colorscheme(),
+    },
+    {
+      "Mofiqul/vscode.nvim",
+      cond = os.getenv("NVIM_COLOR") == "vscode",
+      config = set_colorscheme(function()
+        require("vscode").setup({
+          transparent = true, -- Enable transparent background
+          italic_comments = true, -- Enable italic comment
+        })
+      end),
+    },
+    {
+      "mhartington/oceanic-next",
+      cond = os.getenv("NVIM_COLOR") == "OceanicNext",
+      config = set_colorscheme(function()
+        vim.g.oceanic_next_terminal_bold = 1
+        vim.g.oceanic_next_terminal_italic = 1
+      end),
+    },
+  },
+}
+```
+
+## Apply Changes and Reload Nvim with Color
+これを書いて、`~/.config/nvim/lua/00-plug-config/init.lua` の中の `load_sub_dirs("10-color-config")` のコメントを取りましょう。Nvimを再起動して`:PackerSync<CR>`するとプラグインを読み込めます。起動するときに色も設定して起動してみましょう。
+
+```bash
+$ NVIM_COLOR=nvcode nvim
+```
+
+## Other Recommended Colorscheme
+
+その他にもたくさんのものがあるのでぜひいろいろ探してみてください。
+基本的にこれらのプラグインの設定は簡単でそれぞれのREADMEを読めば問題ありません。
+
+- EdenEast/nightfox.nvim
+- joshdick/onedark.vim
+- lunarvim/darkplus.nvim
+- ulwlu/elly.vim
+- tomasiser/vim-code-dark
+- arcticicestudio/nord-vim
+- chriskempson/vim-tomorrow-theme
+- doki-theme/doki-theme-vim

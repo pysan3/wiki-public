@@ -143,6 +143,8 @@ end
 
 それぞれのフォルダを順番に読み込んでいくスクリプトを書きます。これを順番に読み込むコードを`~/.config/nvim/lua/00-plug-config/init.lua` に追記してください。
 
+このスクリプトの使い方は [次回](10-color-config/#how-to-add-plugin-with-initlua) に書いてあります。
+
 ```lua
 return packer.startup(function(use)
   -- stylua: ignore start
@@ -200,12 +202,15 @@ lua require '00-plug-config'
 require("00-plug-config")
 ```
 
-いったんNvimを閉じて、再度開いてください。そこで`:PackerSync<CR>`というコマンドを実行すると`impatient.nvim` ~ `plenary.nvim`のインストールが始まるはずです。
+いったんNvimを閉じて、再度開いてください。そこで`:PackerSync<CR>`というコマンドを実行すると`impatient.nvim` ~ `plenary.nvim`のインストールが始まるはずです。下の写真のように、`popup.nvim`や`plenary.nvim`がインストールされない場合はNvimを再起動するなど試してみてください。
+
+![packer nvim install](./packer.png)
 
 ***
 
 <span style={{ textAlign: "center" }}>
 無事インストールが完了したら、[次回](10-color-config)はcolorscheme (色の設定) をしていきましょう。
+このどぎつい色からおさらばしましょう。
 </span>
 
 ***
