@@ -1,0 +1,26 @@
+---
+title: hlargs.nvim
+date: date
+tags: ["neovim", "nvim", "setup", "Japanese", "セットアップ"]
+type: docs
+description: Setup hlargs.nvim [10-ts-config/hlargs]
+spoiler:
+---
+
+# hlargs.nvim: [GitHub](https://github.com/m-demare/hlargs.nvim)
+
+デフォルトの Treesitter では関数の引数と関数内変数の色は同じになるが、関数の引数だけ別の色で塗り分けてくれるプラグイン。
+
+| Before                                                                                                                  | After                                                                                                                  |
+| ----------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| ![hlargs-before](https://user-images.githubusercontent.com/34817965/153656813-8c037f48-70a8-486d-890a-484695b33067.png) | ![hlargs-after](https://user-images.githubusercontent.com/34817965/153656820-65bc6144-c4e7-4b5c-a671-0ada8cd8c0eb.png) |
+
+## Setup
+
+ハイライトの色を設定で決めることができる。デフォルトは上の画像のようなオレンジ色だが、自分の好みの colorscheme に合わせて変更してください。
+
+```lua filename="10-ts-config/hlargs.lua"
+require("hlargs").setup({
+  -- color = "#89d0ff",
+})
+```

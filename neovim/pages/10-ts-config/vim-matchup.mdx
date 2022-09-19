@@ -1,0 +1,35 @@
+---
+title: vim-matchup
+date: 2022-09-19
+tags: ["neovim", "nvim", "setup", "Japanese", "セットアップ"]
+type: docs
+description: Setup vim-matchup [10-ts-config/vim-matchup]
+spoiler:
+---
+
+# vim-matchup: [GitHub](https://github.com/andymass/vim-matchup)
+
+C 言語での関数を囲む波括弧のような、離れているつがいに印をつけてジャンプするキーバインド `%` を提供する。また、Python のような分かりづらい言語でも問題なく動作する。
+
+```c
+int main(void) { // <-
+  return 0;
+} // <-
+```
+
+GIF taken from official repo.
+
+<img
+  alt="vim-matchup"
+  src="https://raw.githubusercontent.com/wiki/andymass/vim-matchup/images/match-up-hl1.gif"
+  width="80%"
+></img>
+
+## Setup
+
+```lua filename="10-ts-config/vim-matchup.lua"
+vim.g.matchup_surround_enabled = 1
+vim.g.matchup_delim_noskips = 1 -- recognize symbols within comments
+vim.g.matchup_matchparen_enabled = 1
+vim.g.matchup_matchparen_offscreen = {}
+```

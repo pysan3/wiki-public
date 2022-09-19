@@ -1,0 +1,244 @@
+---
+title: nvim-treesitter
+date: 2022-09-19
+tags: ["neovim", "nvim", "setup", "Japanese", "セットアップ"]
+type: docs
+description: Setup nvim-treesitter [10-ts-config/nvim-treesitter]
+spoiler:
+---
+
+# nvim-treesitter: [GitHub](https://github.com/nvim-treesitter/nvim-treesitter)
+
+[Tree-sitter](https://tree-sitter.github.io/tree-sitter/) はパーサー生成ツールであり、インクリメンタルな構文解析ライブラリです。ソースファイルに対して具体的な構文木を構築し、ソースファイルの編集に伴って構文木を効率的に更新することができます。GitHub のウェブサイトでコードに色をつけているのはこれを使っています。
+
+これを Nvim で使えるようにしたのが [nvim-treesitter](https://github.com/nvim-treesitter/nvim-treesitter) です。
+
+左：なし、右：あり
+![nvim-treesitter](https://github.com/nvim-treesitter/nvim-treesitter/raw/master/assets/example-cpp.png)
+
+## Setup
+
+本来は Packer.nvim でインストールした後、それぞれの言語用のパーサを専用のコマンド `:TSInstall python` というようにインストールしていく方法が紹介されています。その方法も有用ですが、dotfiles として Git で管理しているため、他の環境に行っても勝手に同じパーサを初回時にセットアップしてほしいものです。
+
+そこで、下のコードでは全パーサをリストにまとめて、実際に自分が常にほしいものをコメントインすることで、勝手にインストールしてくれるように設定している。ほしいパーサをコメントインした後 nvim を再起動すると自動的にインストールが始まる。
+
+セットアップ後、[## Tips](#tips) も読んでください。
+
+```lua filename="10-ts-config/nvim-treesitter.lua"
+local ts_packages = {
+  -- "astro",
+  "bash",
+  -- "beancount",
+  -- "bibtex",
+  "c",
+  -- "c_sharp",
+  -- "clojure",
+  "cmake",
+  -- "comment",
+  -- "commonlisp",
+  -- "cooklang",
+  "cpp",
+  -- "css",
+  "cuda",
+  -- "d",
+  -- "dart",
+  -- "devicetree",
+  -- "dockerfile",
+  -- "dot",
+  -- "eex",
+  -- "elixir",
+  -- "elm",
+  -- "elvish",
+  -- "embedded_template",
+  -- "erlang",
+  -- "fennel",
+  -- "fish",
+  -- "foam",
+  "fortran",
+  -- "fusion",
+  -- "Godot",
+  -- "gleam",
+  -- "Glimmer",
+  "glsl",
+  "go",
+  -- "gomod",
+  -- "gowork",
+  -- "graphql",
+  -- "hack",
+  "haskell",
+  -- "hcl",
+  -- "heex",
+  "help",
+  -- "hjson",
+  -- "hocon",
+  "html",
+  -- "http",
+  "java",
+  "javascript",
+  "jsdoc",
+  "json",
+  "json5",
+  "jsonc",
+  "julia",
+  "kotlin",
+  -- "lalrpop",
+  "latex",
+  -- "ledger",
+  -- "llvm",
+  "lua",
+  -- "m68k",
+  "make",
+  -- "markdown",
+  -- "ninja",
+  -- "nix",
+  -- "norg",
+  "ocaml",
+  -- "ocaml_interface",
+  -- "ocamllex",
+  -- "org",
+  -- "pascal",
+  "perl",
+  "php",
+  -- "phpdoc",
+  -- "pioasm",
+  -- "prisma",
+  "proto",
+  -- "pug",
+  "python",
+  -- "ql",
+  "r",
+  -- "rasi",
+  "regex",
+  -- "rego",
+  -- "rst",
+  "ruby",
+  "rust",
+  -- "scala",
+  "scheme",
+  "scss",
+  -- "slint",
+  -- "solidity",
+  -- "sparql",
+  -- "supercollider",
+  -- "surface",
+  -- "svelte",
+  -- "swift",
+  -- "teal",
+  -- "tlaplus",
+  -- "todotxt",
+  "toml",
+  "tsx",
+  -- "turtle",
+  "typescript",
+  -- "vala",
+  -- "verilog",
+  "vim",
+  "vue",
+  -- "wgsl",
+  "yaml",
+  -- "yang",
+  -- "zig",
+}
+
+require("nvim-treesitter.configs").setup({
+  ensure_installed = ts_packages,
+  sync_install = true, -- install languages synchronously (only applied to `ensure_installed`)
+  ignore_install = { -- List of parsers to ignore installing
+  },
+  autopairs = {
+    enable = true,
+  },
+  highlight = {
+    enable = true, -- false will disable the whole extension
+    disable = {
+      "latex",
+    },
+    -- additional_vim_regex_highlighting = true,
+  },
+  indent = {
+    enable = true,
+    disable = {
+      "python",
+      "yaml",
+    },
+  },
+  context_commentstring = {
+    enable = true,
+    enable_autocmd = false,
+  },
+  textobjects = {
+    select = {
+      enable = true,
+      lookahead = true,
+      keymaps = {
+        ["af"] = "@function.outer",
+        ["if"] = "@function.inner",
+        ["ac"] = "@class.outer",
+        ["ic"] = "@class.inner",
+        ["aa"] = "@parameter.outer",
+        ["ia"] = "@parameter.inner",
+      },
+    },
+    swap = {
+      enable = true,
+      swap_next = {
+        ["<leader>ma"] = "@parameter.inner",
+      },
+      swap_previous = {
+        ["<leader>Ma"] = "@parameter.inner",
+      },
+    },
+    move = {
+      enable = true,
+      set_jumps = true,
+      goto_next_start = {
+        ["]m"] = "@function.outer",
+        ["]]"] = "@class.outer",
+      },
+      goto_next_end = {
+        ["]M"] = "@function.outer",
+        ["]["] = "@class.outer",
+      },
+      goto_previous_start = {
+        ["[m"] = "@function.outer",
+        ["[["] = "@class.outer",
+      },
+      goto_previous_end = {
+        ["[M"] = "@function.outer",
+        ["[]"] = "@class.outer",
+      },
+    },
+  },
+  matchup = {
+    enable = true,
+    disable_virtual_text = false,
+    include_match_words = true,
+  },
+})
+```
+
+## Tips
+
+### Fix Issues
+
+どれかのパーサで問題が起きた場合は`:TSUpdate all` というコマンドを実行すると治ることが多い。
+
+### More Word Elements by Tree-sitter
+
+上の設定にある通り、vim の構造単位を拡張して可能なキーバインドを増やしている。
+つまり、今まで `ciw` (Change inner word), `da)` (Delete from `(` to `)`) といった `w`: word, `)`: parentheses 単位での範囲指定しかできなかったが、これからは`cif` (Change inner function) といった言語の構造に寄り添った範囲指定が可能になる。
+
+具体的には、
+
+- Select: `d**`, `c**` などで使えるもの
+  - `"af"` = @function.outer
+  - `"if"` = @function.inner
+  - `"ac"` = @class.outer
+  - `"ic"` = @class.inner
+  - `"aa"` = @parameter.outer
+  - `"ia"` = @parameter.inner
+- Swap: (場所入れ替え)できるもの（ここでは関数の引数の場所入れ替え用のキーバインドを定義している）
+  - `"<leader>ma"` = @parameter.inner
+  - `"<leader>Ma"` = @parameter.inner
+- Move: 関数やクラスの一番上・下に移動するためのキーバインド
+  - 以下略
