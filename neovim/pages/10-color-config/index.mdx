@@ -3,13 +3,13 @@ title: Get the Best Colorscheme
 date: 2022-09-14
 tags: ["neovim", "nvim", "setup", "Japanese", "セットアップ"]
 type: docs
-description: How to install and setup colorscheme for nvim [/10-color-config]
-spoiler: 
+description: How to install and setup colorscheme for nvim [10-color-config]
+spoiler:
 ---
 
 # Get the Best Colorscheme
 
-`colorscheme`を設定することでnvimの見た目を変更することができます。自分ですべての `highlight` を設定する方法もありますが、有志が公開している素晴らしいテーマをインストールして使いましょう。これらはプラグインとしてインストールすることで、簡単に設定することができます。
+`colorscheme`を設定することで nvim の見た目を変更することができます。自分ですべての `highlight` を設定する方法もありますが、有志が公開している素晴らしいテーマをインストールして使いましょう。これらはプラグインとしてインストールすることで、簡単に設定することができます。
 
 ## How to Add Plugin With `init.lua`
 
@@ -25,6 +25,7 @@ return {
   }
 }
 ```
+
 ```txt
 ~/.config/nvim/lua/
 ├── 00-plug-config/
@@ -33,7 +34,7 @@ return {
   └── tokyonight.lua
 ```
 
-それぞれの要素は`packer.nvim`のuse関数への引数で、`install`の中にいるのはそのまま読み込まれ、`setup`の中にいるのはプラグインと同名のファイルをセットアップ時に読み込みます。つまり上の例だと`tokyonight.lua`がセットアップ時に読み込まれます。(プラグイン名の`.`のあとは無視される。)
+それぞれの要素は`packer.nvim`の use 関数への引数で、`install`の中にいるのはそのまま読み込まれ、`setup`の中にいるのはプラグインと同名のファイルをセットアップ時に読み込みます。つまり上の例だと`tokyonight.lua`がセットアップ時に読み込まれます。(プラグイン名の`.`のあとは無視される。)
 
 ## My Recommended Colorscheme
 
@@ -84,7 +85,8 @@ return {
 ```
 
 ## Apply Changes and Reload Nvim with Color
-これを書いて、`~/.config/nvim/lua/00-plug-config/init.lua` の中の `load_sub_dirs("10-color-config")` のコメントを取りましょう。Nvimを再起動して`:PackerSync<CR>`するとプラグインを読み込めます。起動するときに色も設定して起動してみましょう。
+
+これを書いて、`~/.config/nvim/lua/00-plug-config/init.lua` の中の `load_sub_dirs("10-color-config")` のコメントを取りましょう。Nvim を再起動して`:PackerSync<CR>`するとプラグインを読み込めます。起動するときに色も設定して起動してみましょう。
 
 ```bash
 $ NVIM_COLOR=nvcode nvim
@@ -93,7 +95,7 @@ $ NVIM_COLOR=nvcode nvim
 ## Other Recommended Colorscheme
 
 その他にもたくさんのものがあるのでぜひいろいろ探してみてください。
-基本的にこれらのプラグインの設定は簡単でそれぞれのREADMEを読めば問題ありません。
+基本的にこれらのプラグインの設定は簡単でそれぞれの README を読めば問題ありません。
 
 - EdenEast/nightfox.nvim
 - joshdick/onedark.vim
