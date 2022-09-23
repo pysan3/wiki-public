@@ -28,6 +28,62 @@ Nvim には画面の上部と下部に現在開いているファイル名や、
 - Winbar : lspsaga.nvim (details in [70-lsp-config](70-lsp-config))
 - File Browser : [neo-tree.lua](11-uiline-config/neo-tree)
 
+## Fancy Plugins to Enrich the Editor Buffer
+
+編集画面を少し使いやすくするために、色をつけてくれたりするプラグインたちです。
+セットアップは非常にかんたんなのでここで紹介します。
+
+### [nvim-colorizer.lua](https://github.com/norcalli/nvim-colorizer.lua)
+
+- 文章中の色コードだと判断できる部分をその色で塗ってくれる
+
+![nvim-colorizer](https://raw.githubusercontent.com/norcalli/github-assets/master/nvim-colorizer.lua-demo-short.gif)
+
+```lua filename="11-uiline-config/nvim-colorizer.lua"
+require("colorizer").setup()
+```
+
+### [nvim-web-devicons](https://github.com/kyazdani42/nvim-web-devicons)
+
+- `filetype`に基づいたアイコンの辞書を提供するプラグイン。
+- Filetree がとても見やすくなる（画像のファイル名の前にあるアイコンを定義している）
+
+![nvim-web-devicons](./nvim-web-devicons.png)
+
+```lua filename="11-uiline-config/nvim-web-devicons.lua"
+require("nvim-web-devicons").setup({
+  -- your personal icons can go here (to override)
+  -- you can specify color or cterm_color instead of specifying both of them
+  -- DevIcon will be appended to `name`
+  override = {
+    snippets = {
+      icon = "",
+      color = "#DBC63E",
+      name = "Snippets",
+    },
+    ["poetry.lock"] = {
+      icon = "",
+      color = "#41535b",
+      name = "PoetryLockFile",
+    },
+  },
+  -- globally enable default icons (default to false)
+  -- will get overriden by `get_icons` option
+  default = true,
+})
+```
+
+### [indentLine](https://github.com/Yggdroot/indentLine)
+
+- インデントに合わせて縦線を引いてくれる
+
+![indentLine](https://camo.githubusercontent.com/5ae13cd9500029c2ade99b33a7cdddd1cc30d1c96bcf51356d56d7fadbacc077/687474703a2f2f692e696d6775722e636f6d2f325a41376f615a2e706e67)
+
+```lua filename="11-uiline-config/indentLine.lua"
+vim.g.indentLine_char = "▏" -- Change to any character
+vim.g.indentLine_bufTypeExclude = { "help", "terminal", "neo-tree" }
+```
+
 ## Other Cool ~but not recommended~ Plugins
 
 Might be unstable or very old.
