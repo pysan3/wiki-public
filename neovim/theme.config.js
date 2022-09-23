@@ -13,7 +13,7 @@ const URL = `${pkg.author.url.replace('www', 'wiki')}`;
 const REL_PATH = `${process.env.NEXT_PUBLIC_API_URL || '/neovim'}`;
 const SITE = `${URL}${REL_PATH}`;
 const TWITTER = `@${UNAME}`;
-const REL_LOGO = `${REL_PATH}/public/favicon.ico`;
+const REL_LOGO = `${REL_PATH}/favicon.ico`;
 const LOGO = `${URL}${REL_LOGO}`;
 
 function Seo({ title, meta }) {
