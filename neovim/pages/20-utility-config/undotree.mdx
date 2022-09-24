@@ -1,0 +1,50 @@
+---
+title: undotree
+date: 2022-09-25
+tags: ["neovim", "nvim", "setup", "Japanese", "セットアップ"]
+type: docs
+description: Feature rich undotree that you cannot live without. [20-utility-config/undotree]
+spoiler:
+---
+
+# undotree
+
+[undotree](https://github.com/mbbill/undotree)
+
+他の IDE でも、Undo する機能はありますが、vim も全く同じように働きます。Normal Mode で Undo: `u`、Redo: `<C-r>` (`Control + r`) というキーバインドです。
+
+ところで、Undo をしたあとに別の変更を加えると、編集履歴に分岐が生じて、昔の枝は消えてしまいそっちの木に戻れなくなるのが一般的な IDE だと思います。
+
+このプラグインを入れると昔の枝も覚えてくれて、さらに vim を閉じて再起動したあともその木を復元してくれるすぐれものです。
+目立たない機能ですが、かなり QOL を上げてくれます。おすすめです。ちなみに vim でも使えます。
+
+![undotree](https://github.com/mbbill/undotree/raw/master/doc/_static/undotree.png)
+
+## Setup
+
+セットアップは非常に簡単ですが、私は Undo の履歴を保存するディレクトリを変更しています。
+
+また、`<leader>u` で上の画像の Undotree を開けるようにキーバインドを設定しています。
+
+```lua filename="20-utility-config/undotree.lua"
+vim.opt.swapfile = false
+vim.opt.backup = false
+vim.opt.undofile = true
+vim.opt.undodir = vim.fn.stdpath("data") .. "/undodir"
+for _, value in ipairs(vim.opt.undodir:get()) do
+  vim.fn.mkdir(value, "p")
+end
+
+vim.cmd([[ nnoremap <Leader>u :UndotreeShow<CR> ]])
+```
+
+余談ですが、lua で文字列の結合は `"hoge" .. "fuga"` (=> `"hogefuga"`) とします。
+
+そして、`stdpath` とは vim がキャッシュとかに使うディレクトリ名を返してくれる組み込み関数です。
+nvim のデフォルトでは多分以下の値を返します。(Linux) (More info with `:h stdpath`)
+
+| arg    | path                  |
+| ------ | --------------------- |
+| cache  | `~/.cache/nvim`       |
+| config | `~/.config/nvim`      |
+| data   | `~/.local/share/nvim` |
