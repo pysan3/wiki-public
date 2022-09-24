@@ -1,0 +1,74 @@
+---
+title: autosession.nvim
+date: 2022-09-25
+tags: ["neovim", "nvim", "setup", "Japanese", "セットアップ"]
+type: docs
+description: Improve your session management with autosession.nvim! [20-utility-config/autosession]
+spoiler:
+---
+
+# autosession.nvim
+
+私が作ったプラグインなので、贔屓目です。
+[autosession.nvim](https://github.com/pysan3/autosession.nvim)
+
+Vim では、今開いているプロセスを閉じるとウィンドウの場所や開いているバッファなどの情報は破棄されてしまいます。
+しかし、例えばあるプロジェクト内でコーディングしていた場合、次に nvim を開いたときには前の続きから始めたいものです。
+
+そこで、Nvim を閉じたときに自動でウィンドウやバッファの内容、更には Undotree やレジスタの内容までもを全部保存して、次回同じディレクトリで Nvim を開始したときには、すべての情報が復元されるようなプラグインを作りました。
+
+感覚としては、VSCode のようこそ画面の「最近」からセッションを復元できる機能にかなり似せています。
+
+## How to Use
+
+セッションを保存したい場合は `:AutoSessionSave` というコマンドを実行します。（コマンドはタブで補完が効きます。）
+このコマンドを実行するとカレントディレクトリに `.vim/session.vim` というファイルが作成されます。
+
+次回このフォルダで `nvim` と打った場合にこのファイルの内容をもとに立ち上がった直後にセッションの復元を行ないます。(しない設定もできる)
+
+また、`autosave_on_quit = true` ですでに `.vim/session.vim` がある場合に `:AutoSessionSave` と打たずとも nvim を閉じる際に自動的にセッションの状態を保存してくれる設定もできます。
+
+![autosession.nvim](https://user-images.githubusercontent.com/41065736/155856720-f9367491-c4ba-47ed-973c-d1e1ac424c65.GIF)
+
+## Use With Startify
+
+Vim-startify という VSCode でいうようこそ画面のような、過去に開いてたファイルやセッションを覚えて一覧にしてくれるプラグインがあります。[セットアップ説明](/20-utility-config/vim-startify)
+
+`:AutoSessionGlobal` というコマンドを実行するとこの Startify に現在のセッションをディレクトリ名をセッション名として追加することができます。
+
+また、Startify は `nvim <filename>` や `nvim .` などと開くファイル・フォルダを指定せず、`nvim` と起動したときだけ開くようになっていて、`restore_on_setup = true` とすることで、`.vim/session.vim` が存在するときだけ Startify で自動的に現在のディレクトリを選択したことにすることができます。
+
+![vim-startify](https://github.com/mhinz/vim-startify/raw/master/images/startify-menu.png)
+
+## Setup
+
+```lua filename="20-utility-config/autosession.lua"
+require("autosession").setup({
+  restore_on_setup = true,
+  autosave_on_quit = true,
+  force_autosave = true,
+  sessionfile_name = ".vim/session.vim",
+})
+
+vim.cmd([[
+command! CL AutoSessionAuto <bar> :qa
+command! A :qa
+]])
+```
+
+上の設定では、`:CL` というコマンドで、どんなに大量のウィンドウやタブを開いていても全部の位置を記憶して nvim を閉じることができます。(`autosave_on_quit = true` の場合は `:qa` でも可)
+
+## Gitignore the Local Files
+
+こういうプロジェクト単位の設定ファイルを作ったはいいものの、このままでは Git でレポジトリを管理している場合はこのファイルが add されてしまいます。
+
+そこで、Git でグローバルに無視してもらうように設定します。Git のグローバルな設定は、グローバルなイグノアファイルを作って、それを global config で指定します。
+
+```toml filename="~/.config/git/config"
+[core]
+  excludeFile = ~/.config/git/ignore
+```
+
+```txt filename="~/.config/git/ignore"
+.vim/
+```
