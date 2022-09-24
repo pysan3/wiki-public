@@ -1,0 +1,82 @@
+---
+title: tagbar for ctags
+date: 2022-09-25
+tags: ["neovim", "nvim", "setup", "Japanese", "セットアップ"]
+type: docs
+description: More useful vim coding with ctags, enhanced with tagbar. [20-utility-config/tagbar]
+spoiler:
+---
+
+# tagbar for ctags
+
+[tagbar](https://github.com/preservim/tagbar)
+
+- `ctags` というプログラムのインストールが必要です。
+- LSP を使って更に精度のいいオーバービューを生成する `lspsaga.nvim` というプラグイン（[セットアップ](/70-lsp-config)）があるので、最近は使ってないです。
+  - LSP が対応してないファイルタイプでも動作するという強みがあります。
+    - `Markdown`, `Latex` ...
+
+## What Tagbar is
+
+Tagbar is a Vim plugin that provides an easy way to browse the tags of the current file and get an overview of its structure.
+
+![tagbar](https://camo.githubusercontent.com/f83407e2245d6c889e229a628f7363dd98c7d2cace52c1e636c75d8c74a632c6/68747470733a2f2f692e696d6775722e636f6d2f5366394c7332722e706e67)
+
+`ctags` というプログラミングコード解析ツールを使ってコード内のオブジェクトを列挙して、簡単に飛べるようにしたものです。
+（画像内右側のウィンドウ）
+
+なお、このプラグインが動くためには [`ctags`](https://ctags.io/) というプログラムのインストールが必要です。(See: [## How to Setup `ctags`](#how-to-setup-ctags))
+
+## Setup
+
+Normal Mode で`<F8>` (Function Key) で右側の画面をトグルできます。
+
+```lua filename="20-utility-config/tagbar.lua"
+vim.cmd([[
+nmap <F8> :TagbarToggle<CR>
+]])
+```
+
+## How to Setup `ctags`
+
+- OSX (homebrew)
+
+```zsh
+$ brew tap universal-ctags/universal-ctags
+$ brew install --HEAD universal-ctags
+```
+
+- Ubuntu
+
+```bash
+$ sudo apt-get remove exuberant-ctags
+$ sudo snap install universal-ctags
+```
+
+- ArchLinux
+
+```bash
+$ pacman -S ctags
+```
+
+- Build from source (recommended)
+
+```bash
+# XDG Base Directory specification
+# For more info, see https://wiki.archlinux.org/title/XDG_Base_Directory
+export XDG_CONFIG_HOME="$HOME/.config"
+export XDG_CACHE_HOME="$HOME/.cache"
+export XDG_PREFIX_HOME="$HOME/.local"
+export XDG_DATA_HOME="$XDG_PREFIX_HOME/share"
+export XDG_STATE_HOME="$XDG_PREFIX_HOME/state"
+export XDG_BIN_HOME="$XDG_PREFIX_HOME/bin"
+export PATH="$XDG_BIN_HOME:$PATH"
+
+# install ctags
+git clone --depth 1 https://github.com/universal-ctags/ctags.git "$XDG_DATA_HOME/ctags"
+cd "$XDG_DATA_HOME/ctags"
+git submodule update --init --recursive
+./autogen.sh && ./configure --prefix="$XDG_PREFIX_HOME" \
+  && make -j$(nproc) && make install
+cd "$current_dir"
+```
