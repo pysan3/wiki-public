@@ -1,0 +1,49 @@
+---
+title: Navigator.nvim
+date: 2022-09-25
+tags: ["neovim", "nvim", "setup", "Japanese", "セットアップ"]
+type: docs
+description: Navigator plugin that provides keybinds to move across tmux panes. [20-utility-config/Navigator]
+spoiler:
+---
+
+# Navigator.nvim
+
+[Navigator.nvim](https://github.com/numToStr/Navigator.nvim)
+
+tmux の pane 移動と、nvim 内のウィンドウ移動をいい感じに統合して、同じキーバインドで動き回れるようにしてくれる。
+tmux 使ってない人には一切必要ない。
+
+![Navigator.nvim](https://user-images.githubusercontent.com/24727447/157040356-1f44323a-c7b6-4955-8207-5e6cade08c9e.gif)
+
+## Setup
+
+`tmux.conf` も同時にいじる必要がある。
+
+私は tmux で pane を移動するキーバインドは `Alt + hjkl` (vim: `<A-hjkl>`, tmux: `bind -n M-hjkl`) なので、それを登録している。
+
+```lua filename="20-utility-config/Navigator.lua"
+require("Navigator").setup()
+
+-- Keybindings
+local all_modes = { "n", "v", "o", "i", "c", "t" }
+vim.keymap.set(all_modes, "<A-h>", "<CMD>NavigatorLeft<CR>")
+vim.keymap.set(all_modes, "<A-l>", "<CMD>NavigatorRight<CR>")
+vim.keymap.set(all_modes, "<A-k>", "<CMD>NavigatorUp<CR>")
+vim.keymap.set(all_modes, "<A-j>", "<CMD>NavigatorDown<CR>")
+vim.keymap.set(all_modes, "<A-p>", "<CMD>NavigatorPrevious<CR>")
+```
+
+```toml filename="~/.tmux.conf"
+# Movement between panes
+is_vim="ps -o state= -o comm= -t '#{pane_tty}' \
+    | grep -iqE '^[^TXZ ]+ +(\\S+\\/)?g?(view|nvim)(diff)?$'"
+bind -n 'M-h' if-shell "$is_vim" 'send-keys M-h'  'select-pane -L'
+bind -n 'M-j' if-shell "$is_vim" 'send-keys M-j'  'select-pane -D'
+bind -n 'M-k' if-shell "$is_vim" 'send-keys M-k'  'select-pane -U'
+bind -n 'M-l' if-shell "$is_vim" 'send-keys M-l'  'select-pane -R'
+bind -T copy-mode-vi 'M-h' select-pane -L
+bind -T copy-mode-vi 'M-j' select-pane -D
+bind -T copy-mode-vi 'M-k' select-pane -U
+bind -T copy-mode-vi 'M-l' select-pane -R
+```
