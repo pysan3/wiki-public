@@ -170,6 +170,9 @@ export default {
   docsRepositoryBase: 'https://github.com/pysan3/wiki-public',
   titleSuffix: ` - wiki.${NAME}`,
   navigation: true,
+  sidebar: {
+    defaultMenuCollapsed: true,
+  },
   darkMode: true,
   footer: {
     component: <Footer />,
