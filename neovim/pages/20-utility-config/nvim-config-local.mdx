@@ -1,0 +1,60 @@
+---
+title: nvim-config-local
+date: 2022-09-25
+tags: ["neovim", "nvim", "setup", "Japanese", "セットアップ"]
+type: docs
+description: Load project specific config files with no security risk. [20-utility-config/nvim-config-local]
+spoiler:
+---
+
+# nvim-config-local
+
+[nvim-config-local](https://github.com/klen/nvim-config-local)
+
+基本的に nvim の設定は `~/.config/nvim/init.vim` に書いたものがすべての場合に適用されますが、例えばあえて古いバージョンを使いたいときなんかに同じ設定を読み込んでしまうと困る場合がある。
+
+そこで、nvim を開くフォルダの中に特別な名前の設定ファイルがある場合はそれも一緒に読み込んでくれるのがこのプラグイン。
+
+なお、これを気をつけずに使うと、ネットから落としてきたレポジトリに実は特別な名前のファイルが意図的に仕組まれていて、そこで nvim を開いてしまったら勝手に何かが実行されることになってしまうため、このプラグインは初めて見た設定ファイルを実行する前には確認をとってくれる。そして、次回からはその設定を覚えてるため、とても便利。
+
+```txt
+[config-local]: Unknown config file found: ".vim/local"
+[s]kip, (o)pen, (i)gnore, (t)rust:
+```
+
+## Setup
+
+私は、`$PWD/.vim/local.vim` というファイルがある場合それを読み込むという設定にしている。
+このファイル名は設定で変更することができる。
+
+```lua filename="20-utility-config/nvim-config-local.lua"
+require("config-local").setup({
+  config_files = { -- Config file patterns to load (lua supported)
+    ".vim/local.vim",
+    "./.vim/local.vim",
+    ".vim/local.lua",
+    "./.vim/local.lua",
+  },
+  hashfile = vim.fn.stdpath("data") .. "/config_local", -- Where the plugin keeps files data
+  autocommands_create = true, -- Create autocommands (VimEnter, DirectoryChanged)
+  commands_create = true, -- Create commands (ConfigSource, ConfigEdit, ConfigTrust, ConfigIgnore)
+  silent = true, -- Disable plugin messages (Config loaded/ignored)
+})
+```
+
+## Gitignore the Local Files
+
+こういうプロジェクト単位の設定ファイルを作ったはいいものの、このままでは Git でレポジトリを管理している場合はこのファイルが add されてしまいます。
+
+そこで、Git でグローバルに無視してもらうように設定します。Git のグローバルな設定は、グローバルなイグノアファイルを作って、それを global config で指定します。
+
+```toml filename="~/.config/git/config"
+[core]
+  excludeFile = ~/.config/git/ignore
+```
+
+```txt filename="~/.config/git/ignore"
+.vim/
+```
+
+``
