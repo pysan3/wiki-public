@@ -1,0 +1,78 @@
+---
+title: The Powerful Telescope for Nvim
+date: 2022-09-25
+tags: ["neovim", "nvim", "setup", "Japanese", "セットアップ"]
+type: docs
+description: Use telescope.nvim to reach the maximum efficiency. [25-telescope-config]
+spoiler:
+---
+
+# The Powerful Telescope for Nvim
+
+やっと、Nvim っぽいすごいプラグインを紹介できます。
+
+[telescope.nvim](https://github.com/nvim-telescope/telescope.nvim) はほとんど組み込みな機能として開発されているプラグインです。
+主な用途は Fuzzy Finder ですが、その他にも様々な機能が telescope に沿う形で作られており、nvim の作業で中心となってくる機能です。
+
+## What is Fuzzy Finder?
+
+前方一致検索のような感覚で、ファイルやコマンド履歴を検索できる便利なツールです。
+
+最も有名なのは、コマンドラインツールとして存在する [`fzf`](https://github.com/junegunn/fzf) でしょう。
+この検索方法を爆速で、かっこいい UI で実装したのが telescope です。
+
+fzf の検索方法は、入力文字列の各文字は隣接している必要がありません。例えば、以下の画像のように baz という入力が与えられた時、これにマッチする行が絞り込まれます。また、マッチした行のリストは、入力値に基づいてより最適な順番にソートされて表示されています。同じく以下の画像の例を見てみると、入力後では baz という行が foobarbaz よりもセレクタに近い位置に表示されていることが分かります。このように、入力値が曖昧でも目当ての文字列を即座に見つけることができます。([1]より引用。)
+
+| All Matches                                                                                           | Search With `baz`                                                                             |
+| ----------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
+| ![all matches](https://cdn-ak.f.st-hatena.com/images/fotolife/k/ktr_0731/20190130/20190130020555.png) | ![baz](https://cdn-ak.f.st-hatena.com/images/fotolife/k/ktr_0731/20190130/20190130020634.png) |
+
+もっと詳しい探索アルゴリズムに関してはこちらの[記事](https://syfm.hatenablog.com/entry/2019/01/31/090000) [1]にとてもよくまとまっています。
+
+## Telescope.nvim
+
+さて、この機能を nvim の中で使いましょう。
+
+![telescope.nvim](https://camo.githubusercontent.com/3d59e34d1f406890adf620546d3d97017ce0aacda034b1788c66fa872f192134/68747470733a2f2f692e696d6775722e636f6d2f5454546a6136742e676966)
+
+最も基本的な使い方はファイルをファイル名で検索することです。また、上の画像のようにファイルの内容を右にシンタックスハイライト付きでプレビューすることができます。(実装が重い VSCode とかには無理な芸当だぜ)
+
+また、ファイル検索以外にも様々な [Pickers](https://github.com/nvim-telescope/telescope.nvim#pickers) が用意されていて、色々な検索をすることができます。
+
+こんなやつもあるよ。
+
+import Image from "next/image";
+import gif from "./telescope-planets.gif";
+
+<Image src={gif} width={852} height={480} />
+
+また、検索画面の見た目も色々変更することが可能です。
+![telescope theme](https://camo.githubusercontent.com/cc512a0d4de37b42a4a6ecbc7eaaf35b0e516ad87ef5a0f182b04f3e7515fc49/68747470733a2f2f692e696d6775722e636f6d2f536f72416358762e706e67)
+
+さらに、telescope はとても拡張がしやすいように設計されており、自分で検索する内容を配列で渡すだけで、自分だけの検索窓を作ることがコードを数行書くだけで可能です。
+これにより、様々なプラグインが telescope を使ってより良い機能を提供しています。
+
+## Setup
+
+```lua filename="25-telescope-config/init.lua"
+return {
+  setup = {
+    "stevearc/aerial.nvim",
+    {
+      "nvim-telescope/telescope.nvim",
+      requires = {
+        "BurntSushi/ripgrep",
+        {
+          "nvim-telescope/telescope-fzf-native.nvim",
+          run = "cmake -S. -Bbuild -DCMAKE_BUILD_TYPE=Release && cmake --build build --config Release && cmake --install build --prefix build",
+        },
+        "nvim-telescope/telescope-media-files.nvim",
+        "nvim-telescope/telescope-dap.nvim",
+      },
+    },
+  },
+  install = {
+    "nvim-telescope/telescope-symbols.nvim",
+  },
+}
+```
