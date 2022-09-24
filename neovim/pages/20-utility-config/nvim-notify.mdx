@@ -1,0 +1,37 @@
+---
+title: nvim-notify For Nicer Notifications
+date: 2022-09-25
+tags: ["neovim", "nvim", "setup", "Japanese", "セットアップ"]
+type: docs
+description: Install nvim-notify to enhance the builtin notification system in nvim. [/20-utility-config/nvim-notify]
+spoiler:
+---
+
+# nvim-notify For Nicer Notifications
+
+[nvim-notify](https://github.com/rcarriga/nvim-notify)
+
+Nvim には通知システムというものがある。
+これはプラグインたちのデバッグ情報などを表示するために使える nvim に組み込まれた機能だが、この出力をかっこよくするプラグイン。
+
+主観的にターミナルで動いてるとは思えないぐらいかっこよくなるので結構おすすめだけど、言ってしまえばただのリソースの無駄遣い。
+
+![nvim-notify](https://user-images.githubusercontent.com/24252670/130856848-e8289850-028f-4f49-82f1-5ea1b8912f5e.gif)
+
+## Setup
+
+```lua filename="20-utility-config/nvim-notify.lua"
+require("notify").setup({
+  stages = "static", -- fade_in_slide_out, fade, slide, static
+  render = "default",
+  timeout = 800,
+  max_width = nil,
+  max_height = nil,
+  background_colour = "Normal",
+  minimum_width = 50,
+  icons = { ERROR = "", WARN = "", INFO = "", DEBUG = "", TRACE = "✎" },
+})
+
+-- Overwrite builtin notify API
+vim.notify = require("notify")
+```
