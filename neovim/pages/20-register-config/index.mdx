@@ -1,0 +1,88 @@
+---
+title: Vim Pro with Registers
+date: 2022-09-23
+tags: ["neovim", "nvim", "setup", "Japanese", "セットアップ"]
+type: docs
+description: Enhance your vim motions with vim registers and useful plugins [20-register-config]
+spoiler:
+---
+
+# Vim Pro with Registers
+
+まずはこれを読んでください。[What are vim registers?](/Tips/registers)
+
+これを少し使いやすくするプラグインです。
+
+## `init.lua`
+
+```lua filename="20-register-config/init.lua"
+return {
+  setup = {
+    {
+      "AckslD/nvim-neoclip.lua",
+      requires = {
+        { "tami5/sqlite.lua", module = "sqlite" },
+        { "nvim-telescope/telescope.nvim" },
+      },
+    },
+  },
+}
+```
+
+### nvim-neoclip.lua
+
+今は１つしかないのでそのまま紹介します。
+
+Vimのデフォルトのレジスタは様々な使いみちがあり、とても使いやすいですが、ちょっとかゆいところに手が届かないときがあります。
+それを解決してくれるのがこのプラグインです。
+
+特に、Insert中に`Ctrl + b`で過去のYankのログから検索して復活させてくれる(Windows での`Win + v`機能)などは重宝しています。
+
+他にもいろいろな工夫がされたプラグインがあるので自分で調べてみてください。いつもちょっと困ってるところを解決してくれるプラグインが必ずあると思います。
+
+```lua filename="20-register-config/nvim-neoclip.lua"
+require("neoclip").setup({
+  history = 1000,
+  preview = true,
+  content_spec_column = true,
+  db_path = vim.fn.stdpath("data") .. "/databases/neoclip.sqlite3",
+  enable_persistent_history = true,
+  continuous_sync = true,
+  keys = {
+    telescope = {
+      i = {
+        select = "<cr>",
+        paste = "<c-o>",
+        paste_behind = "<c-i>",
+        replay = "<c-q>", -- replay a macro
+        delete = "<c-d>", -- delete an entry
+        custom = {},
+      },
+      n = {
+        select = "<cr>",
+        paste = "p",
+        paste_behind = "P",
+        replay = "q",
+        delete = "d",
+        custom = {},
+      },
+    },
+  },
+  filter = function(data)
+    for _, entry in ipairs(data.event.regcontents) do
+      if vim.fn.match(entry, [[^\s*$]]) == -1 then
+        return true
+      end
+    end
+    return false
+  end,
+})
+
+require("telescope").load_extension("neoclip")
+
+vim.cmd([[
+nnoremap <leader>fb <cmd>Telescope neoclip<CR>
+nnoremap <leader>fq <cmd>Telescope macroscope<CR>
+inoremap <C-b> <Esc><CMD>Telescope neoclip<CR>
+]])
+```
