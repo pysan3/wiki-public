@@ -1,4 +1,7 @@
 ### Node ###
+
+/out/
+
 # Logs
 logs
 *.log
