@@ -1,0 +1,79 @@
+---
+title: Easy Way to Manage Comments in Your Code with Nvim
+date: 2022-10-18
+tags: ["neovim", "nvim", "setup", "Japanese", "セットアップ"]
+type: docs
+description: Smart and powerful comment plugin for neovim. [70-cmp-config/Comment]
+spoiler:
+---
+
+# Easy Way to Manage Comments in Your Code with Nvim
+
+コメントをしたいときはこのプラグインがすべてをやってくれます。
+
+今書いている行を言語の構造から理解することができるので、ほとんど間違ったコメントを挿入することはありません。
+おそらく VSCode より使いやすいレベルだと思います。
+
+デフォルトのキーバインド (Toggle comment of current line in normal mode) は `gcc` でちょっと不思議かもしれませんが、
+これは実は Vim のデフォルトのキーバインドを踏襲しているからです。
+
+なので、何もプラグインを入れない状態でもコメントを入れることは可能です。(精度は悪い…)
+
+ちなみに、もし VSCode のキーバインド `Control + /` に設定したい場合は、Vim は `<C-/>` => `<C-_>` として解釈するので `<C-_>` にマップする必要があります。`<C-/>` に設定しても残念ながら何も起こりません。
+
+## Setup
+
+```lua filename="70-cmp-config/Comment.lua"
+local comment = require("Comment")
+
+comment.setup({
+  ignore = "^$",
+  mappings = {
+    basic = true,
+    extra = true,
+  },
+  pre_hook = function(ctx)
+    -- Only calculate commentstring for tsx filetypes
+    if vim.bo.filetype == "typescriptreact" then
+      local U, location = require("Comment.utils"), nil
+      if ctx.ctype == U.ctype.blockwise then
+        location = require("ts_context_commentstring.utils").get_cursor_location()
+      elseif ctx.cmotion == U.cmotion.v or ctx.cmotion == U.cmotion.V then
+        location = require("ts_context_commentstring.utils").get_visual_start_location()
+      end
+      return require("ts_context_commentstring.internal").calculate_commentstring({
+        key = ctx.ctype == U.ctype.linewise and "__default" or "__multiline",
+        location = location,
+      })
+    end
+  end,
+})
+
+require("nvim-treesitter.configs").setup({
+  context_commentstring = {
+    enable = true,
+    enable_autocmd = false,
+  },
+})
+
+vim.cmd([[
+xnoremap gC :normal gcc<CR>
+]])
+```
+
+一番最後の行の `xnoremap gC` とは、Visual モードでコメントされている行とされていない行が入り乱れている部分を選択したときに、それらの状態を入れ替えるというキーバインドです。
+
+```python
+# hoge = 0
+hoge = 1
+# fuga = 0
+fuga = 1
+
+# | Select all and press `gC`
+# V
+
+hoge = 0
+# hoge = 1
+fuga = 0
+# fuga = 1
+```
