@@ -1,0 +1,68 @@
+---
+title: Git Repository Management With Neovim
+date: 2022-10-17
+tags: ["neovim", "nvim", "setup", "Japanese", "セットアップ"]
+type: docs
+description: Manage your git repositories easily inside nvim. [30-git-config]
+spoiler:
+---
+
+# Git Repository Management With Neovim
+
+Git レポジトリの管理をコマンドラインからやるのは大変ですよね。
+Nvim ではプラグインをすることで、あれらのコマンドをキーバインド一つで行なうことができます。
+
+また、Diff を見たり、過去誰がどのような変更を行なったのかをエディタ上で簡単に確認することができます。
+
+Git でのコマンドの扱いが簡単になることで、コミットもしやすくなるので、頻繁に細かくコミットをするクセもつくと思います。
+
+## Setup
+
+```lua filename="30-git-config/init.lua"
+return {
+  setup = {
+    "lewis6991/gitsigns.nvim",
+    "TimUntersberger/neogit",
+  },
+  install = {
+    "sindrets/diffview.nvim",
+    "rhysd/conflict-marker.vim",
+  },
+}
+```
+
+## "sindrets/diffview.nvim" : [link](https://github.com/sindrets/diffview.nvim)
+
+![diffview.nvim](https://user-images.githubusercontent.com/2786478/131269942-e34100dd-cbb9-48fe-af31-6e518ce06e9e.png)
+
+VSCode のようなファイルの差分が簡単に見れるものです。実はこの機能は Vim に純正でついているもの(details: `:h diff`)ですが、それを見やすく、またキーバインドなどの追加したプラグインです。
+
+![diffview.nvim-conflicts](https://user-images.githubusercontent.com/2786478/188286293-13bbf0ab-3595-425d-ba4a-12f514c17eb6.png)
+
+## "rhysd/conflict-marker.vim" : [link](https://github.com/rhysd/conflict-marker.vim)
+
+![conflict-marker.vim](https://user-images.githubusercontent.com/454315/64728297-f8953d80-d4da-11e9-9033-df5bfdee2f7a.png)
+
+ファイル上のコンフリしている部分に色をつけてくれるプラグインです。また、色などはカスタマイズが可能です。
+また、コンフリを解消するキーバインドを提供します。
+
+これと上のプラグインを使うことで VSCode などよりもかなり速く作業をすることが可能です。
+
+| Keybind               | Movement                 |
+| --------------------- | ------------------------ |
+| `ct`(Checkout Theirs) | リモートの状態を採用する |
+| `co`(Checkout Ours)   | こちら側の変更を採用する |
+| `cb`(Checkout Both)   | 両方を残す               |
+
+## Other Recommended Plugins
+
+今回は紹介しませんが、他にも Git 関連でとてもすばらしいプラグインが存在します。
+
+- "tpope/vim-fugitive"
+  - Vim でも使える Neogit の代わりになるもの
+  - キーバインドも豊富でとても使いやすいです
+- "ldelossa/gh.nvim"
+  - [`gh-cli`](https://cli.github.com/) という、コマンドラインから GitHub をとても使いやすくなるコマンドがあります
+  - これを Neovim の中で実行できるようにするものです
+  - `gh-cli`自体とても使いやすいのでこれについて調べるだけでも一見の価値あり
+  - 特にオープンソースに携わっている人や、Issue / PR をよく投げる人にはおすすめ

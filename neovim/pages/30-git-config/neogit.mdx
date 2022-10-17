@@ -1,0 +1,90 @@
+---
+title: Manage All Your Repositories With Neogit
+date: 2022-10-17
+tags: ["neovim", "nvim", "setup", "Japanese", "セットアップ"]
+type: docs
+description: Keyboard driven interactions with the git cli tools. [30-git-config/neogit]
+spoiler:
+---
+
+# Manage All Your Repositories With Neogit
+
+Neogit は Nvim の中で Git のコマンドラインで打ついろいろな操作をすることができます。
+
+Nvim から離れずに add, commit, push, ...ができるので非常に便利です。
+また、全てをキーバインドでこなすことができるのも嬉しいポイントです。
+
+![neogit](https://user-images.githubusercontent.com/32014449/109874516-8042af00-7c6f-11eb-8afc-65ef52448c7a.png)
+
+## Setup
+
+```lua filename="30-git-config/neogit.lua"
+require("neogit").setup({
+  disable_signs = false,
+  disable_hint = false,
+  disable_context_highlighting = false,
+  disable_commit_confirmation = true,
+  disable_insert_on_commit = false,
+  auto_refresh = true,
+  disable_builtin_notifications = true,
+  commit_popup = {
+    kind = "split",
+  },
+  -- Change the default way of opening neogit
+  kind = "split",
+  -- customize displayed signs
+  signs = {
+    -- { CLOSED, OPENED }
+    section = { ">", "v" },
+    item = { ">", "v" },
+    hunk = { "", "" },
+  },
+  integrations = {
+    diffview = true,
+  },
+  -- Setting any section to `false` will make the section not render at all
+  sections = {
+    untracked = { folded = false },
+    unstaged = { folded = false },
+    staged = { folded = false },
+    stashes = { folded = true },
+    unpulled = { folded = true },
+    unmerged = { folded = false },
+    recent = { folded = true },
+  },
+  mappings = {
+    status = {
+      ["B"] = "BranchPopup",
+    },
+  },
+})
+
+vim.cmd([[
+nnoremap [neogit] <Nop>
+
+nmap <Leader>g [neogit]
+nnoremap [neogit]s :Neogit kind=split<CR>
+nnoremap [neogit]d :DiffviewOpen<CR>
+nnoremap [neogit]D :DiffviewOpen master<CR>
+nnoremap [neogit]g :Neogit log<CR>
+nnoremap [neogit]l :Neogit pull<CR>
+nnoremap [neogit]p :Neogit push<CR>
+]])
+
+vim.cmd([[
+highlight ConflictMarkerBegin guibg=#2f7366
+highlight ConflictMarkerOurs guibg=#2e5049
+highlight ConflictMarkerTheirs guibg=#344f69
+highlight ConflictMarkerEnd guibg=#2f628e
+highlight ConflictMarkerCommonAncestorsHunk guibg=#754a81
+]])
+```
+
+ここで、キーバインドの設定で少しおもしろい方法をとっています。
+
+- `[neogit]` という何もしないというキーコンビネーションを設定します。
+- `<leader>g` を `[neogit]` というキーコンビネーションにマップします。
+- その `[neogit]` を使って以降の実際に使用するキーバインドを設定していきます。
+  - つまり、`[neogit]s` == `<leader>gs` というキーバインドを設定しています。
+  - こうすることで、Neogit に関するキーバインドをすべて共通の Prefix で指定しているように書くことができます
+  - 気分が変われば、`[neogit]`にマップしているキーを変更することで、以降のすべてのキーバインドを同時に変更することができます。

@@ -1,0 +1,100 @@
+---
+title: Git Decorations in Edit Windows Using Gitsigns
+date: 2022-10-17
+tags: ["neovim", "nvim", "setup", "Japanese", "セットアップ"]
+type: docs
+description: Super fast git decorations implemented purely in lua/teal. [30-git-config/gitsigns]
+spoiler:
+---
+
+# Git Decorations in Edit Windows Using Gitsigns
+
+| Hunk Actions                                                                      | Line Blame                                                                              |
+| --------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
+| [Hunk](https://raw.githubusercontent.com/lewis6991/media/main/gitsigns_blame.gif) | [Line Blame](https://raw.githubusercontent.com/lewis6991/media/main/gitsigns_blame.gif) |
+
+上の画像でわかるように、まず変更が加えられた部分の右側(行番号のところ)に色をつけてくれます。
+
+また、それぞれの変更部位に関して様々なアクションが可能です。
+例えば Reset hunk や、Preview hunk (ハンクで何が変更されたのかをプレビューする)などできます。
+
+また、Line Blame では、各行を最後に編集したのがいつで誰なのかを薄い文字で表示します。(VSCode でいう GitLens を入れたときみたいな挙動)
+
+## Setup
+
+```lua filename="30-git-config/gitsigns.lua"
+require("gitsigns").setup({
+  -- signs = {}, https://github.com/lewis6991/gitsigns.nvim/blob/main/lua/gitsigns/config.lua
+  signcolumn = true, -- Toggle with `:Gitsigns toggle_signs`
+  numhl = false, -- Toggle with `:Gitsigns toggle_numhl`
+  linehl = false, -- Toggle with `:Gitsigns toggle_linehl`
+  word_diff = false, -- Toggle with `:Gitsigns toggle_word_diff`
+  watch_gitdir = {
+    interval = 1000,
+    follow_files = true,
+  },
+  attach_to_untracked = true,
+  current_line_blame = true, -- Toggle with `:Gitsigns toggle_current_line_blame`
+  current_line_blame_opts = {
+    virt_text = true,
+    virt_text_pos = "eol", -- 'eol' | 'overlay' | 'right_align'
+    delay = 1000,
+    ignore_whitespace = true,
+  },
+  current_line_blame_formatter_opts = {
+    relative_time = false,
+  },
+  sign_priority = 6,
+  update_debounce = 100,
+  status_formatter = nil, -- Use default
+  max_file_length = 40000,
+  preview_config = {
+    -- Options passed to nvim_open_win
+    border = "single",
+    style = "minimal",
+    relative = "cursor",
+    row = 1,
+    col = 1,
+  },
+  yadm = {
+    enable = false,
+  },
+  on_attach = function(bufnr)
+    local function map(mode, lhs, rhs, opts)
+      opts = vim.tbl_extend("force", { noremap = true, silent = true }, opts or {})
+      vim.api.nvim_buf_set_keymap(bufnr, mode, lhs, rhs, opts)
+    end
+    -- Navigation
+    map("n", "]c", "&diff ? ']c' : '<cmd>Gitsigns next_hunk<CR>'", { expr = true })
+    map("n", "[c", "&diff ? '[c' : '<cmd>Gitsigns prev_hunk<CR>'", { expr = true })
+    -- Actions
+    map("n", "<leader>hs", "<cmd>Gitsigns stage_hunk<CR>")
+    map("v", "<leader>hs", "<cmd>Gitsigns stage_hunk<CR>")
+    map("n", "<leader>hr", "<cmd>Gitsigns reset_hunk<CR>")
+    map("v", "<leader>hr", "<cmd>Gitsigns reset_hunk<CR>")
+    map("n", "<leader>hS", "<cmd>Gitsigns stage_buffer<CR>")
+    map("n", "<leader>hu", "<cmd>Gitsigns undo_stage_hunk<CR>")
+    map("n", "<leader>hR", "<cmd>Gitsigns reset_buffer<CR>")
+    map("n", "<leader>hv", "<cmd>Gitsigns preview_hunk<CR>")
+    map("n", "<leader>hb", '<cmd>lua require"gitsigns".blame_line{full=true}<CR>')
+    map("n", "<leader>hd", "<cmd>Gitsigns diffthis<CR>")
+    map("n", "<leader>hD", '<cmd>lua require"gitsigns".diffthis("~")<CR>')
+    map("n", "<leader>td", "<cmd>Gitsigns toggle_deleted<CR>")
+    -- Text object
+    map("o", "ih", "<cmd><C-U>Gitsigns select_hunk<CR>")
+    map("x", "ih", "<cmd><C-U>Gitsigns select_hunk<CR>")
+  end,
+})
+
+vim.cmd([[
+highlight GitGutterAdd    guifg=#227700 ctermfg=2
+highlight GitGutterChange guifg=#2222ff ctermfg=3
+highlight GitGutterDelete guifg=#880000 ctermfg=1
+]])
+```
+
+特に注目したいのは下の方に書かれている Map です。キーバインドを登録しています。
+これらは私が勝手に使っているのもなので変更してもらって構いませんが、これらを覚えておくことでファイル内での Git 管理がとても簡単になります。
+
+ちなみに `stage_hunk` とは、ファイルのその部分だけを `git add` することで、
+`reset_hunk` はその部分を `git reset` (変更前に戻す)ということを指します。
