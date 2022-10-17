@@ -1,0 +1,87 @@
+---
+title: Language Specific Configurations and Setups
+date: 2022-10-17
+tags: ["neovim", "nvim", "setup", "Japanese", "セットアップ"]
+type: docs
+description: Very useful plugins for each programming language and others. [60-lang-config]
+spoiler:
+---
+
+# Language Specific Configurations and Setups
+
+プログラム言語単位でとても使いやすいプラグインたちがあるのでそれらを紹介します。
+
+例えば Latex や Markdown など、他言語では使えないがその言語特有の入力を補助してくれるものたちです。(Markdown is not turing complete, I know)
+
+## Setup
+
+`setup` の中にあるプラグインはそれぞれのページで説明しますが、下の設定いらずで動いてくれるプラグインたちの機能はこの下で紹介します。
+
+```lua filename="60-lang-config/init.lua"
+return {
+  setup = {
+    "lervag/vimtex",
+    "plasticboy/vim-markdown",
+    "dkarter/bullets.vim",
+  },
+  install = {
+    "tpope/vim-abolish",
+    "chip/vim-fat-finger",
+    "pixelneo/vim-python-docstring",
+    "Vimjas/vim-python-pep8-indent",
+    "uarun/vim-protobuf",
+    "tikhomirov/vim-glsl",
+    { "iamcco/markdown-preview.nvim", run = "cd app && npm install" },
+    { "heavenshell/vim-jsdoc", run = "make install", ft = { "javascript", "javascript.jsx", "typescript" } },
+    { 'h-hg/fcitx.nvim', cond = vim.fn.executable("fcitx5-remote") == 1 },
+  },
+}
+```
+
+## English
+
+- "tpope/vim-abolish" : [link](https://github.com/tpope/vim-abolish)
+  - 英語での様々な品詞をいい感じに色々してくれる。詳しくはリンク先を見て
+- "chip/vim-fat-finger" : [link](https://github.com/chip/vim-fat-finger)
+  - 英語でよくある打ち間違いを勝手に直してくれるプラグイン。4000 単語以上が収録されている
+
+## Japanese
+
+- "h-hg/fcitx.nvim" : [link](https://github.com/chip/vim-fat-finger)
+  - Insert モードでアルファベット系言語以外を使っていた場合、Normal モードに戻ると勝手に英語に変更してくれるもの。
+  - もう一度 Insert モードに入るとさっき使ってた言語に入力モードを戻してくれる。超ありがたい。
+  - Note: これは Linux でよく使われる Fcitx5 を使っている場合のみ使用できます。
+
+## Python
+
+- "pixelneo/vim-python-docstring" : [link](https://github.com/pixelneo/vim-python-docstring)
+  - python での関数ドキュメントを自動生成してくれます。引数名や型も自動で入れてくれるので便利です。
+  - ![vim-python-docstring](https://camo.githubusercontent.com/07e967735ce65b91a5cbbe5900b512341cbdaff2499ffed1ee0d7bd56b3b9f3f/68747470733a2f2f6d656469612e67697068792e636f6d2f6d656469612f5355746b504a4d55643735566d31554978472f67697068792e676966)
+- "Vimjas/vim-python-pep8-indent" : [link](https://github.com/Vimjas/vim-python-pep8-indent)
+  - python のインデントは意外と複雑で他のプラグインだとどうもうまく行きません。
+  - このプラグインを入れておくだけで世界が平和になります。
+  - 多分世界のすごい人たちが頭を使ってくれているのだと思います。
+
+## Protobuf
+
+- "wfxr/protobuf.vim" : [link](https://github.com/wfxr/protobuf.vim)
+  - protobuf のファイルはプログラミング言語ではないので意外とサポートがされていません。
+  - このプラグインを入れることできれいに表示してくれます。
+
+## GLSL
+
+- "tikhomirov/vim-glsl" : [link](https://github.com/tikhomirov/vim-glsl)
+  - GLSL (シェーダー言語)もいってしまえば使ってる人が少ないのでサポートは薄いです。
+  - このプラグインを入れることできれいに表示してくれます。
+
+## Markdown
+
+- "iamcco/markdown-preview.nvim" : [link](https://github.com/iamcco/markdown-preview.nvim)
+  - Markdown ファイルを開いた状態で `:MarkdownPreview` というコマンドを実行すると、現在のファイルをブラウザでプレビューしてくれる。
+  - Nvim 内でカーソルが動くにつれて自動でブラウザもスクロールしてくれる。
+  - `Katex` もサポートしているし、生成されるページの見た目も結構いい感じにかっこいい
+
+## JavaScript / TypeScript
+
+- "heavenshell/vim-jsdoc" : [link](https://github.com/heavenshell/vim-jsdoc)
+  - "vim-python-docstring" の JS バージョン

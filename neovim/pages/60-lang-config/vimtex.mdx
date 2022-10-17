@@ -1,0 +1,63 @@
+---
+title: Setup Latex Environment With Vimtex
+date: 2022-10-18
+tags: ["neovim", "nvim", "setup", "Japanese", "セットアップ"]
+type: docs
+description: Vimtex will manage everything for your latex works. [60-lang-config/vimtex]
+spoiler:
+---
+
+# Setup Latex Environment With Vimtex
+
+Latex は文法も独特で補完が効きづらかったりして結局 Overleaf で書いていませんか？
+
+このプラグインがすべてを解決してくれます。
+もうめんどくさい諸々は全部勝手に解決してくれます。
+なんでかよくわからないけど、諸々が勝手にうまく行きます。
+
+## Setup
+
+すべての設定は [ここ](https://github.com/lervag/vimtex/blob/master/doc/vimtex.txt) に書いてあります。
+
+なにか気に食わないことがあったらドキュメントを読みましょう。おそらく設定で変更できます。
+
+以下は私がいい感じと思って使っている設定ですが、意見が割れるかもしれません。特に Conceal の部分は好きに変えてください。
+Conceal とは、例えば `$\alpha$` みたいな数式を画面の表示上だけ `$α$` (greek) と表示してくれます。(私はオフにしています。)
+
+```lua filename="60-lang-config/vimtex.lua"
+-- https://github.com/lervag/vimtex/blob/master/doc/vimtex.txt#LC900
+-- Use `latexmk` to build tex files into `./build` folder
+vim.g.vimtex_compiler_latexmk = {
+  build_dir = "build",
+  callback = 1,
+  continuous = 1,
+  executable = "latexmk",
+  hooks = {},
+  options = {
+    "-verbose",
+    "-file-line-error",
+    "-synctex=1",
+    "-interaction=nonstopmode",
+  },
+}
+
+-- https://github.com/lervag/vimtex/blob/master/doc/vimtex.txt#LC2136
+-- What and what not to conceal
+vim.g.vimtex_syntax_conceal = {
+  accents = 1,
+  cites = 1,
+  fancy = 0,
+  greek = 0,
+  math_bounds = 0,
+  math_delimiters = 1,
+  math_fracs = 0,
+  math_super_sub = 0,
+  math_symbols = 0,
+  sections = 1,
+  styles = 0,
+}
+
+-- https://github.com/lervag/vimtex/blob/master/doc/vimtex.txt#LC2140
+-- Open compile log on warning. (I recommend turning it off.)
+vim.g.vimtex_quickfix_open_on_warning = 0
+```

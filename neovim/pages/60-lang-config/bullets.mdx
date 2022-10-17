@@ -1,0 +1,33 @@
+---
+title: Work With Bullet Points in Vim
+date: 2022-10-18
+tags: ["neovim", "nvim", "setup", "Japanese", "セットアップ"]
+type: docs
+description: Better integration of bullet points in vim with bullets.vim [60-lang-config/bullets]
+spoiler:
+---
+
+# Work With Bullet Points in Vim
+
+[GitHub](https://github.com/lervag/vimtex/blob/master/doc/vimtex.txt)
+
+とにかく _いい感じ_ に Bullet Points (箇条書き)をストレスフリーに扱えます。
+
+特に `J` (現在の行と下の行を統合する)というキーバインドを Markdown の箇条書きでも使えるようになるのはとても嬉しいです。
+
+![simple bullets](https://github.com/dkarter/bullets.vim/raw/master/img/bullets.gif)
+
+![Complex bullets](https://github.com/dkarter/bullets.vim/raw/master/img/renumber.gif)
+
+## Setup
+
+```lua filename="60-lang-config/bullets.lua"
+vim.g.bullets_enabled_file_types = {
+  "markdown",
+  "text",
+  "gitcommit",
+  "scratch",
+}
+
+vim.g.bullets_outline_levels = { "num", "abc", "std-" }
+```
