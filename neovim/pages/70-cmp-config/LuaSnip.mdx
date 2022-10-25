@@ -1,0 +1,238 @@
+---
+title: Snippet Engine to Boost Your Performance
+date: 2022-10-19
+tags: ["neovim", "nvim", "setup", "Japanese", "セットアップ"]
+type: docs
+description: LuaSnip is the trending snippet engine for neovim. [70-cmp-config/LuaSnip]
+spoiler:
+---
+
+# Snippet Engine to Boost Your Performance
+
+## What are Snippets
+
+スニペットとはなんでしょうか。これは、ある程度決まった構文を入力するときに非常に便利です。
+予めそれを登録しておくことで、簡単にコードを書くことができます。
+
+例えば、`for` 文などはよくスニペットとして登録されます。
+
+```python
+for i in range(10):
+  print(i)
+
+# Create a snippet
+for ${1:i} in range(${2:n}):
+  $0
+```
+
+## LuaSnip
+
+現在、このスニペットを挿入して、カーソル移動をしてくれるプラグインで一番良く使われているのは [LuaSnip](https://github.com/L3MON4D3/LuaSnip) だと思います。
+
+このスニペットエンジンでは、上のような構文の登録だけじゃなく、スニペットの途中で自分が書いた内容で動的に生成することができます。
+
+下の動画では、関数を定義するスニペットを使っていますが、変数を入力するとその変数名が関数ドキュメントの方に動的に反映されているのがわかると思います。
+
+import Image from "next/image";
+import gif from "./luasnip.gif";
+
+<Image src={gif} width={852} height={480} />
+
+## Setup
+
+```lua filename="70-cmp-config/LuaSnip.lua"
+local luasnip = require("luasnip")
+
+require("luasnip.loaders.from_snipmate").lazy_load()
+require("luasnip.loaders.from_vscode").lazy_load()
+
+-- manually load snippets from `molleweide/LuaSnip-snippets.nvim`
+require("luasnip.loaders.from_lua").lazy_load({
+  paths = vim.api.nvim_get_runtime_file("lua/luasnip_snippets/snippets", false),
+})
+require("luasnip.loaders.from_lua").lazy_load({
+  paths = vim.fn.stdpath("config") .. "/lua/snippets",
+})
+
+-- LuaSnip startup config
+local util = require("luasnip.util.util")
+luasnip.config.setup({
+  region_check_events = "InsertEnter,CursorMoved", -- "CursorMoved", "CursorHold", "InsertEnter"
+  delete_check_events = "TextChanged,CursorMoved",
+  -- extend ft snippets to load
+  load_ft_func = require("luasnip.extras.filetype_functions").extend_load_ft({
+    c = { "cpp" },
+    markdown = { "lua", "json", "html" },
+    html = { "css", "javascript" },
+    typescript = { "javascript" },
+    all = { "_" },
+  }),
+  ext_opts = {
+    [require("luasnip.util.types").choiceNode] = {
+      active = {
+        virt_text = { { "o", "GruvboxOrange" } },
+      },
+    },
+  },
+  -- allow nested snippet placeholders
+  parser_nested_assembler = function(_, snippet)
+    local select = function(snip, no_move)
+      snip.parent:enter_node(snip.indx)
+      for _, node in ipairs(snip.nodes) do
+        node:set_mark_rgrav(true, true)
+      end
+      if not no_move then
+        vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<Esc>", true, false, true), "n", true)
+        local pos_begin, pos_end = snip.mark:pos_begin_end()
+        util.normal_move_on(pos_begin)
+        vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("v", true, false, true), "n", true)
+        util.normal_move_before(pos_end)
+        vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("o<C-G>", true, false, true), "n", true)
+      end
+    end
+    function snippet:jump_into(dir, no_move)
+      if self.active then
+        if dir == 1 then
+          self:input_leave()
+          return self.next:jump_into(dir, no_move)
+        else
+          select(self, no_move)
+          return self
+        end
+      else
+        self:input_enter()
+        if dir == 1 then
+          select(self, no_move)
+          return self
+        else
+          return self.inner_last:jump_into(dir, no_move)
+        end
+      end
+    end
+    function snippet:jump_from(dir, no_move)
+      if dir == 1 then
+        return self.inner_first:jump_into(dir, no_move)
+      else
+        self:input_leave()
+        return self.prev:jump_into(dir, no_move)
+      end
+    end
+    return snippet
+  end,
+})
+```
+
+## Add Your Snippets
+
+では実際に自分でスニペットを定義してみましょう。
+LuaSnip ではたくさんの方法でスニペットを登録できますが、今回は簡単なやり方を紹介します。
+（もっと複雑ことができる方法を知りたい方はこれらの動画を見てください。[機能紹介 (最初は茶番 w)](https://www.youtube.com/watch?v=Dn800rlPIho&t=2m32s), [がち解説](https://www.youtube.com/watch?v=ub0REXjhpmk) : 英語ですが、スニペットの凄さがわかるので一見の価値あり。）
+
+スニペットの登録は `~/.config/nvim/snippets/<language name>.snippets` というファイルに書き込んで登録します。
+例えば今回 `python` 用のスニペットを作成してみましょう。
+
+```txt filename="~/.config/nvim/snippets/python.snippets
+snippet fori For loop in range
+  for ${1:i} in range(${2:n}):
+    $0
+```
+
+スニペットの定義は、`snippet` と書いて始まります。次の単語 `fori` がスニペット名でコーディングにこの文字列を打ち込むとスニペットが発火します。スニペット名の後ろには説明文が続き、改行以外任意の文字が使用できます。省略してもいいです。
+
+次の行からスニペット本体を一段インデントして記述します。ここで、`${1}` は 1 番にカーソルが来る位置です。`${1:default value}` と`:`の後ろに文字を入れることで、デフォルト値を設定することもできます。`${0}` は最後にカーソルが来る位置です。
+
+ちなみにこの記述の仕方を `snipmate` 方式といいます。他にも例えば…
+
+```txt filename="~/.config/nvim/snippets/python.snippets
+snippet tdev Snippet to add torch device
+	device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+snippet tryef Try Except Finally
+  try:
+    ${0:pass}
+  except ${2} as ${3:e}:
+    ${4:pass}
+  finally:
+    ${5:pass}
+```
+
+最後に、LuaSnip の設定ファイルに以下の行を追加します。(上の Setup にはすでに入ってる)
+
+```lua
+require("luasnip.loaders.from_snipmate").lazy_load()
+```
+
+### Load Your VSCode Snippets
+
+ところで、VSCode でスニペットを使っていた人は、json で記述する方式になれている人もいるかもしれません。
+
+上で記述したスニペットの書き方は私がおすすめする方法なだけで、あの json での書き方も理解することができます。
+その場合はその json たちがある **フォルダ名** を以下のように登録してください。
+
+```lua
+require("luasnip.loaders.from_vscode").lazy_load({
+  paths = {
+    "/path/to/your/snippets/folder",
+    -- "/maybe/another/folder/as/well",
+  },
+})
+```
+
+## Load Friendly Snippets
+
+> スニペット便利すぎて草、なんか色々な人が作ってる例を見れるところないの？
+
+あります。[friendly-snippets](https://github.com/rafamadriz/friendly-snippets) (VSCode 方式) とか [vim-snippets](https://github.com/honza/vim-snippets) (snipmate 方式) とか。
+
+これらを使用するには、プラグインとして入れて、下の行を設定に追加します。(上の設定にはすでに追加済み)
+
+```lua
+require("luasnip.loaders.from_snipmate").lazy_load() -- load snipmate type snippets
+require("luasnip.loaders.from_vscode").lazy_load() -- load vscode like json type snippets
+```
+
+### Add Snippet Of Current File Type
+
+ところで、コードを書いていて、これスニペットに登録したいなって思ったときに `~/.config/nvim/snippets/<language name>.snippets` をわざわざ開きに行くのはちょっと面倒くさかったりします。
+
+ということで、現在編集中のファイルの言語のスニペットファイルを編集しに行くコマンドを作成しました。
+`:LsEditSnip` というコマンドを実行すると自動でファイルを開いてくれます。そして、そのファイルを保存して閉じると自動でその変更が適用されます。
+(ここでは説明しなかった LuaSnip 方式で書く場合のファイルを開くコマンド `:LsEditLua` も追加しています)
+
+```lua
+-- Command to edit snippets of the current file
+local snippet_file_infos = {
+  snipmate = {
+    prefix = vim.fn.stdpath("config") .. "/snippets",
+    ext = "snippets",
+  },
+  lua = {
+    prefix = vim.fn.stdpath("config") .. "/lua/snippets",
+    ext = "lua",
+  },
+}
+local function edit_snippet_files(sniptype, ft)
+  local file_found = nil
+  require("luasnip.loaders").edit_snippet_files({
+    format = function(file, source_name)
+      if source_name ~= sniptype or string.find(file, "site") then
+        return nil
+      end
+      file_found = file
+      return file_found
+    end,
+  })
+  if file_found == nil then
+    file_found = snippet_file_infos[sniptype].prefix .. "/" .. ft .. "." .. snippet_file_infos[sniptype].ext
+    vim.notify("Create new snippet file for " .. ft .. " at " .. file_found)
+    vim.cmd("edit " .. file_found)
+  end
+  return file_found
+end
+vim.api.nvim_create_user_command("LsEditSnip", function()
+  edit_snippet_files("snipmate", vim.bo.filetype)
+end, {})
+vim.api.nvim_create_user_command("LsEditLua", function()
+  edit_snippet_files("lua", vim.bo.filetype)
+end, {})
+
+```
