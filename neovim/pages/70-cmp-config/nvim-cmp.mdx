@@ -1,0 +1,392 @@
+---
+title: Completion Engine nvim-cmp for Neovim
+date: 2022-10-25
+tags: ["neovim", "nvim", "setup", "Japanese", "セットアップ"]
+type: docs
+description: Completion engine is required for your convinient coding. [70-cmp-config/nvim-cmp]
+spoiler:
+---
+
+# Completion Engine nvim-cmp for Neovim
+
+## `nvim-cmp` : [GitHub](https://github.com/hrsh7th/nvim-cmp)
+
+いわゆる補完機能を司るプラグインです。
+他にも補完プラグインは存在しますが、Nvim で一番使用されているのはこのプラグインだと思います。
+
+不足している機能はなく、情報やサポート体制は一番多いのでこれにしておいて損はないと思います。
+
+import Image from "next/image";
+import gif from "./nvim-cmp.gif";
+
+<Image src={gif} width={852} height={480} />
+
+## Nvim-cmp Sources
+
+このプラグインの更にいいことは、source と呼ばれる拡張機能システムがあることです。
+
+つまり、補完候補に出てくる内容に関して、VSCode では LSP (プログラミング言語サポート)からの候補しか表示されませんが、
+このプラグインではスニペットや英単語、絵文字などのようにそれ以外の補完候補も同時に表示することができます。
+
+また、これらの表示される順番などを自分でいじることができるのも嬉しいポイントです。
+
+## Setup
+
+このプラグインのセットアップはとても長いので少しずつ解説していきます。
+
+なお、`cmp.setup({...})` の中を少しずつ書いていきます。そのため、下のように表記しますが、実際にはいい感じにすべてをくっつけてください。
+また、すべてを [## Entire Setup](#entire-setup) に載せたので、全体を見たい場合はそちらを参考にしてください。
+
+```lua
+cmp.setup({
+  -- ...
+  hoge = {
+    foo = "bar"
+  },
+  -- ...
+})
+```
+
+### まずはおまじない。
+
+```lua filename="70-cmp-config/nvim-cmp.lua"
+local cmp = require("cmp")
+local types = require("cmp.types")
+local compare = require("cmp.config.compare")
+local luasnip = require("luasnip")
+```
+
+### Load Snippet Engine
+
+[/70-cmp-config/LuaSnip](/70-cmp-config/LuaSnip) で紹介したスニペットエンジンを登録します。
+他のスニペットエンジンを使用している場合は、[nvim-cmp README](https://github.com/hrsh7th/nvim-cmp#recommended-configuration) を参考にしてください。
+
+```lua filename="70-cmp-config/nvim-cmp.lua"
+cmp.setup({
+  snippet = {
+    expand = function(args)
+      luasnip.lsp_expand(args.body)
+    end,
+  },
+  -- ...
+})
+```
+
+### Mappings
+
+次は、補完するときのキーバインドを登録します。
+`call_with_fallback` 関数は `cmp.setup` の外に書くので注意してください。
+
+キーバインドは基本自分の好きなように設定してください。VSCode と同じ Tab の感じでやりたい場合は [こちら](https://github.com/hrsh7th/nvim-cmp/wiki/Example-mappings#luasnip) を参照してください。ただ、あまりおすすめしません。
+
+特筆すべきものを書いておきます。
+
+- `cmp.mapping.confirm({ select = true })` : `<Tab>`
+  - 補完ウィンドウが表示されている場合に現在選択しているもの、もしくは一番上にあるものを補完する
+- `cmp.mapping.confirm({ select = false })` : `<CR>` (Enter)
+  - 補完ウィンドウで何かを選択している場合それを補完する。勝手に一番上を選択しない。
+- `cmp.mapping.select_prev_item()` (`<C-p>`), `cmp.mapping.select_next_item()` (`<C-n>`)
+  - 上・下の候補を選ぶ。VSCode でいうところの `Tab` / `Shift + Tab`
+- `<C-l>`, `<C-h>`
+  - LuaSnip で `$1` から `$2` に飛ぶみたいなキーバインド。またはその逆
+  - スニペット内にいない場合は単純に 1 文字右・左に移動する。
+  - `def func(|)` -> `<C-l>` -> `def func()|` って移動するときに便利（`:` を入れやすい）
+
+```lua filename="70-cmp-config/nvim-cmp.lua"
+---Check whether `check` and call action or fallback
+---@param check boolean: true -> action(), false -> fallback()
+---@param action function
+---@param fallback function
+---@return any: result of calling action or fallback
+local function call_with_fallback(check, action, fallback)
+  if check then
+    return action()
+  else
+    return fallback()
+  end
+end
+
+cmp.setup({
+  -- ...
+  mapping = {
+    ["<C-p>"] = cmp.mapping.select_prev_item(),
+    ["<C-n>"] = cmp.mapping.select_next_item(),
+    ["<C-b>"] = cmp.mapping(cmp.mapping.scroll_docs(-4), { "i", "c" }),
+    ["<C-f>"] = cmp.mapping(cmp.mapping.scroll_docs(4), { "i", "c" }),
+    ["<C-Space>"] = cmp.mapping(cmp.mapping.complete(), { "i", "c" }),
+    ["<C-y>"] = cmp.config.disable, -- disable default keybind
+    ["<C-e>"] = cmp.mapping(function(fallback)
+      call_with_fallback(luasnip.choice_active(), function()
+        luasnip.change_choice(-1)
+      end, fallback)
+    end, { "i", "s" }),
+    ["<C-d>"] = cmp.mapping(function(fallback)
+      call_with_fallback(luasnip.choice_active(), function()
+        luasnip.change_choice(1)
+      end, fallback)
+    end, { "i", "s" }),
+    ["<CR>"] = cmp.mapping.confirm({ select = false }),
+    ["<C-l>"] = cmp.mapping(function(fallback)
+      call_with_fallback(luasnip.in_snippet() and luasnip.jumpable(), function()
+        luasnip.jump(1)
+      end, fallback)
+    end, { "i", "s" }),
+    ["<C-h>"] = cmp.mapping(function(fallback)
+      call_with_fallback(luasnip.jumpable(-1), function()
+        luasnip.jump(-1)
+      end, fallback)
+    end, { "i", "s" }),
+    ["<Tab>"] = cmp.mapping.confirm({ select = true }),
+    ["<S-Tab>"] = cmp.mapping.select_prev_item(),
+  },
+  -- ...
+})
+```
+
+### Nvim-cmp sources
+
+ここで source を登録していきます。上から順番に優先順位を指定します。
+もっと細かく順位を指定したい場合はドキュメントを読んでください。
+
+source に関してはめっちゃたくさんの種類があるので、[List of Sources](https://github.com/hrsh7th/nvim-cmp/wiki/List-of-sources) を読んでください。
+インストールの仕方はとても簡単なので、色々探してみてください。
+
+- `nvim_lua`
+  - nvim の設定では独自の Lua を使います。そのため LuaLSP だけでなく、nvim 用に作られたもの。
+  - 拡張機能とかを自作するときは死ぬほど重宝する
+- `path`
+  - 実際の自分のディレクトリにあるファイルのパスを補完できる。
+- `dictionary`
+  - 登録した辞書の中から補完。Linux だと[英単語帳](https://packages.ubuntu.com/bionic/wamerican)がインストールできるので、それを読み込ませることで論文書くときにとても便利です。
+- `spell`
+  - 自分で登録した spell 単語から補完します。例えば自分の名前や大学名などを登録することができます。
+- `calc`
+  - `1+1` とかって書くと `2` というのが補完候補に出てきます。
+
+```lua filename="70-cmp-config/nvim-cmp.lua"
+local buffers = {
+  name = "buffer",
+  option = {
+    keyword_length = 2,
+    get_bufnrs = function() -- from all visible buffers
+      local bufs = {}
+      for _, win in ipairs(vim.api.nvim_list_wins()) do
+        bufs[vim.api.nvim_win_get_buf(win)] = true
+      end
+      return vim.tbl_keys(bufs)
+    end,
+  },
+}
+
+cmp.setup({
+  -- ...
+  sources = cmp.config.sources({
+    { name = "git" },
+    { name = "nvim_lsp" },
+    { name = "nvim_lua" },
+    { name = "luasnip" },
+    { name = "path" },
+  }, {
+    buffers,
+    { name = "dictionary", keyword_length = 2 },
+    { name = "spell" },
+    { name = "calc" },
+  }),
+  -- ...
+})
+```
+
+### Formatting
+
+次は候補を表示する popup の表示に関する設定です。
+
+```lua filename="70-cmp-config/nvim-cmp.lua"
+-- stylua: ignore start
+local cmp_icons = { Text = "", Method = "m", Function = "", Constructor = "",
+  Field = "", Variable = "", Class = "", Interface = "", Module = "",
+  Property = "", Unit = "", Value = "", Enum = "", Keyword = "", Snippet = "",
+  Color = "", File = "", Reference = "", Folder = "", EnumMember = "",
+  Constant = "", Struct = "", Event = "", Operator = "", TypeParameter = "" }
+-- stylua: ignore end
+-- find more here: https://www.nerdfonts.com/cheat-sheet
+
+cmp.setup({
+  formatting = {
+    fields = { "kind", "abbr", "menu" },
+    format = function(entry, vim_item)
+      vim_item.kind = string.format("%s", cmp_icons[vim_item.kind])
+      vim_item.menu = ({
+        nvim_lsp = "[LSP ]",
+        nvim_lua = "[NLUA]",
+        luasnip = "[Snip]",
+        buffer = "[Buff]",
+        path = "[Path]",
+        dictionary = "[Text]",
+        spell = "[Spll]",
+        calc = "[Calc]",
+      })[entry.source.name]
+      return vim_item
+    end,
+  },
+})
+```
+
+### Sorting
+
+Nvim-cmp の強い部分は、めっちゃ細かく候補の順番を指定することができます。詳細は[こちら](https://github.com/hrsh7th/nvim-cmp/blob/main/lua/cmp/config/compare.lua)を見るとわかると思います。
+
+私はデフォルトの順番だと変数名の候補が結構下に来るのが気に食わないので順番を上に上げています。
+
+```lua filename="70-cmp-config/nvim-cmp.lua"
+---@type table<integer, integer>
+local modified_priority = {
+  [types.lsp.CompletionItemKind.Variable] = types.lsp.CompletionItemKind.Method,
+  [types.lsp.CompletionItemKind.Snippet] = 0, -- top
+  [types.lsp.CompletionItemKind.Text] = 100, -- bottom
+}
+---@param kind integer: kind of completion entry
+local function modified_kind(kind)
+  return modified_priority[kind] or kind
+end
+
+cmp.setup({
+  -- ...
+  sorting = {
+    comparators = {
+      compare.offset,
+      compare.exact,
+      compare.score,
+      function(entry1, entry2) -- sort by compare kind (Variable, Function etc)
+        local kind1 = modified_kind(entry1:get_kind())
+        local kind2 = modified_kind(entry2:get_kind())
+        if kind1 ~= kind2 then
+          return kind1 - kind2 < 0
+        end
+      end,
+      function(entry1, entry2) -- ignore `=~` when sorting by length
+        local len1 = string.len(string.gsub(entry1.completion_item.label, "[=~]", ""))
+        local len2 = string.len(string.gsub(entry2.completion_item.label, "[=~]", ""))
+        if len1 ~= len2 then
+          return len1 - len2 < 0
+        end
+      end,
+      compare.sort_text,
+      compare.order,
+    },
+  },
+  -- ...
+})
+```
+
+## Others
+
+```lua filename="70-cmp-config/nvim-cmp.lua"
+cmp.setup({
+  -- ...
+  confirm_opts = {
+    behavior = cmp.ConfirmBehavior.Replace,
+    select = false,
+  },
+  experimental = {
+    ghost_text = true,
+  },
+  window = {
+    documentation = {
+      border = { "╭", "─", "╮", "│", "╯", "─", "╰", "│" },
+    },
+  },
+  -- ...
+})
+```
+
+### Auto Pairs
+
+関数を補完したときなどは、その後ろに `(|)` を入れた上でカーソルもいい感じに中に入れてくれると嬉しいですよね。
+という設定です。おまじないだと思ってもらって大丈夫です。
+
+ちなみにこれ以降のものは `cmp.setup` のあとに書いてください。
+
+```lua filename="70-cmp-config/nvim-cmp.lua"
+-- from nvim-autopairs
+local cmp_autopairs = require("nvim-autopairs.completion.cmp")
+cmp.event:on("confirm_done", cmp_autopairs.on_confirm_done({ map_char = { tex = "" } }))
+```
+
+### Git Completion
+
+コミットメッセージを打ってるとき、リモートの PR の番号とかを取得するためにブラウザ開いてわざわざ見に行くのめんどくさいですよね。
+
+ということで、ローカルで `#` から打ち始めると自動で PR とか Issue の情報をとってきて補完の情報のところにいい感じに表示してくれます。
+
+```lua filename="70-cmp-config/nvim-cmp.lua"
+-- from cmp-git
+require("cmp_git").setup({
+  filetypes = { "NeogitCommitMessage", "gitcommit", "octo" },
+})
+```
+
+### Commandline Completion
+
+コマンドラインとは Vim で `:` 打ってコマンドを打ち込むところです。
+
+なんとそこで補完を効かせることができます。基本これはおまじないだと思って追記しておいてください。
+
+```lua filename="70-cmp-config/nvim-cmp.lua"
+-- from cmdline
+cmp.setup.cmdline(":", {
+  mapping = cmp.mapping.preset.cmdline(),
+  sources = cmp.config.sources({
+    { name = "path" },
+  }, {
+    { name = "cmdline" },
+  }),
+})
+```
+
+### English Dictionary for Completion
+
+上で述べた、英単語辞書から補完するのを、自動で辞書を見つけて読み込んでくれるものです。
+
+**Only Works For Linux** **Linux だけで動作します。**
+
+`/usr/share/dict/<dict_source_name>` というファイルを探します。
+
+```lua filename="70-cmp-config/nvim-cmp.lua"
+-- from cmp-dictionary
+local dict_source = {}
+-- add my spell lists; $XDG_CONFIG_HOME/nvim/spell/*.add
+for filepath in string.gmatch(vim.fn.glob(vim.env.XDG_CONFIG_HOME .. "/nvim/spell/*.add"), "[^\n]+") do
+  table.insert(dict_source, filepath)
+end
+-- add system installed dictionaries
+local share_dict_source = {
+  "words",
+  "american-english", -- wamerican
+  -- "american-english-insane", -- wamerican-insane
+  -- "ngerman", -- wngerman
+}
+for _, source in ipairs(share_dict_source) do
+  if vim.fn.filereadable(vim.fn.expand("/usr/share/dict/" .. source)) ~= 0 then
+    table.insert(dict_source, "/usr/share/dict/" .. source)
+  end
+end
+
+require("cmp_dictionary").setup({
+  dic = {
+    ["*"] = dict_source,
+    -- ["lua"] = "path/to/lua.dic",
+    -- ["javascript,typescript"] = { "path/to/js.dic", "path/to/js2.dic" },
+    -- filename = {
+    --   ["xmake.lua"] = { "path/to/xmake.dic", "path/to/lua.dic" },
+    -- },
+    -- filepath = {
+    --   ["%.tmux.*%.conf"] = "path/to/tmux.dic"
+    -- },
+  },
+  exact = 2,
+  first_case_insensitive = true,
+  async = false,
+  capacity = 5,
+  debug = false,
+})
+```
