@@ -1,0 +1,55 @@
+---
+title: Language Server Protocol Implementation for Nvim
+date: 2022-10-25
+tags: ["neovim", "nvim", "setup", "Japanese", "セットアップ"]
+type: docs
+description: Setup your LSP server for nvim. [70-lsp-config]
+spoiler:
+---
+
+# Language Server Protocol Implementation for Nvim
+
+近年のエディタに必須な機能は、言語を理解したコードの解釈ですよね。
+VSCode などには標準で搭載されていて、拡張機能を入れれば勝手に色々セットアップしてくれるのであまり意識したことがないかもしれません。
+
+この機能は Language Server Protocol (LSP) というプロトコルで Language Server (コードを解釈するもの) と Language Client (エディタ・ユーザに表示する側) で通信することで、実装しています。
+
+LSP でプロトコルを統一することで、エディタに関わらず各言語につきサーバは 1 回しか実装しなくてよくて、エディタ側は言語に関わらず LSP を理解できるように一度実装すればいいので、とても開発が楽になります。
+
+本来 Language Server や Client と呼ぶのが正しいですが、nvim の世界ではここらへんの諸々をすべてひっくるめて LSP と呼んでいます。
+実際、プラグインを自作したりしない限り nvim でも LSP の仕組みをほとんど理解しなくても VSCode のように勝手に動いてくれます。
+
+## Mason.nvim
+
+LSP を使うには、各言語の Language Server をインストールする必要があります。それを全部自動でやってくれるプラグインが `mason.nvim` です。
+
+それをインストールしてセットアップすればだいたい LSP のセットアップは完了です。
+
+ということで、次回からセットアップをしていきましょう。
+
+## Setup
+
+```lua filename="70-lsp-config/init.lua"
+return {
+  setup = {
+    {
+      "williamboman/mason.nvim",
+      requires = {
+        "williamboman/mason-lspconfig.nvim",
+        "WhoIsSethDaniel/mason-tool-installer.nvim",
+        "hrsh7th/cmp-nvim-lsp",
+        "neovim/nvim-lspconfig", -- enable LSP
+        {
+          "jose-elias-alvarez/null-ls.nvim", -- linter
+          commit = "76d0573fc159839a9c4e62a0ac4f1046845cdd50",
+        },
+        { "glepnir/lspsaga.nvim", branch = "main" },
+        "andrewferrier/textobj-diagnostic.nvim",
+      },
+    },
+    "ray-x/lsp_signature.nvim", -- show hints when writing function arguments
+    "j-hui/fidget.nvim", -- print linting progress
+    { "kevinhwang91/nvim-ufo", requires = "kevinhwang91/promise-async" },
+  },
+}
+```
