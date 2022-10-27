@@ -1,0 +1,26 @@
+---
+title: Show Function Signature While Typing Arguments in Neovim
+date: 2022-10-27
+tags: ["neovim", "nvim", "setup", "Japanese", "セットアップ"]
+type: docs
+description: lsp_signature shows the function details while you type the arguments. [70-lsp-config/lsp_signature]
+spoiler:
+---
+
+# Show Function Signature While Typing Arguments in Neovim
+
+関数の引数を埋めている間、その関数にどのような引数が必要なのか、その関数のドキュメントと同時に表示し続けてくれるプラグインです。
+
+VSCode にもたしか最近追加されましたが、とても便利なのでぜひ使いましょう。
+
+![lsp_signature](https://user-images.githubusercontent.com/1681295/122689853-11628380-d269-11eb-994f-65974fb1312d.png)
+
+## Setup
+
+```lua filename="70-lsp-config/lsp_signature.lua"
+require("lsp_signature").setup({
+  max_height = 5,
+  zindex = 1,
+  extra_trigger_chars = { "(", ",", "\n" },
+})
+```
